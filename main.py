@@ -1,18 +1,17 @@
 import write_csv
-
-
-
-
-
-
-
+import parse_data
 
 
 def main():
 	print('Main Program Begins : ')
 	write_csv.generate_file_list()
 	print('File list Generated')
-	write_csv.generate_meta_file()
+	data = parse_data.parse_data()
+	print('object created')
+	#Normalize
+	data.translate_scale()
+	print(data_normalized)
+
 
 
 
