@@ -1,8 +1,11 @@
 import numpy as np
+from scipy.spatial import distance
 
 BOUNDARY_DIM = (2.0/5.0)
 NUM_LINES = 9
-
+#TODO: change get_line_length from average length per trace to average length across all traces
+#TODO: calculate sum and average of all angles in a new function
+#TODO: calculate the number of sharp points - maybe this can happen inside the function above . its in reference 22 of zannibis
 def get_trace_num(data_obj):
     """
     returns the number of traces in a character inkml
@@ -66,6 +69,23 @@ def get_aspect_ratio(data_obj):
     """
     return data_obj.xmax/data_obj.ymax
 
+def get_line_length(data_obj):
+    """
+    sums the euclidean distance of all the points in each trace
+    :param data_obj:
+    :return:
+    """
+    total_sum = 0
+    for trace in data_obj.traces:
+        trace_sum = 0
+        for i in range(1, len(trace)):
+            distance.euclidean(trace[i-1], trace[i])
+        total_sum += trace_sum
+    return total_sum, total_sum/len(data_obj.traces)
+
+
+
+    #loop through and compute sum of euclidean distances between each
 def is_hcrossing(p1, p2, y):
     """
     method to see if a horizontal line with a y value of y crosses between 2 points
@@ -179,6 +199,7 @@ def get_vertical_crossings(iter, data_obj):
         last_points_avgs) / len(last_points_avgs)
 
 
+#holds features 0 through 4, 35
 global_feature_map = {
     get_trace_num : 0,
     get_x_mean: 1,
@@ -187,6 +208,12 @@ global_feature_map = {
     get_aspect_ratio : 4
 }
 
+#global features map for 2 return value functions
+global_double_feature_map = {
+    get_line_length : (35, 36)
+}
+
+#holds features number 5 through 34
 crossings_feature_map = {
     get_horizontal_crossings : (5, 6, 7),
     get_vertical_crossings: (20, 21, 22)
@@ -197,6 +224,8 @@ def extract_all_features(data_obj):
     for key in global_feature_map():
         data_obj.features[global_feature_map[key]] = key(data_obj)
 
+    for key in global_double_feature_map():
+        data_obj.features[global_double_feature_map[key][0]], data_obj.features[global_double_feature_map[key][1]] = key(data_obj)
 
     for i in range(5):
         for key in crossings_feature_map:
