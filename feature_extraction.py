@@ -12,7 +12,7 @@ def get_trace_num(data_obj):
     :param tracelist: a list of traces
     :return: the length of tracelist
     """
-    return len(data_obj.traces)
+    return len(data_obj.norm_traces)
 
 # def get_x_range(data_obj):
 #     """
@@ -36,9 +36,9 @@ def get_x_mean(data_obj):
     :param data_obj:
     :return:
     """
-    xdata = data_obj.traces[0][:,0]
-    for i in range(1, len(data_obj.traces)):
-        xdata = np.append(xdata, data_obj.traces[i][:,0])
+    xdata = data_obj.norm_traces[0][:,0]
+    for i in range(1, len(data_obj.norm_traces)):
+        xdata = np.append(xdata, data_obj.norm_traces[i][:,0])
     return np.mean(xdata)
 
 def get_y_mean(data_obj):
@@ -47,18 +47,18 @@ def get_y_mean(data_obj):
     :param data_obj:
     :return:
     """
-    ydata = data_obj.traces[0][:, 1]
-    for i in range(1, len(data_obj.traces)):
-        ydata = np.appendy(ydata, data_obj.traces[i][:, 1])
+    ydata = data_obj.norm_traces[0][:, 1]
+    for i in range(1, len(data_obj.norm_traces)):
+        ydata = np.appendy(ydata, data_obj.norm_traces[i][:, 1])
     return np.mean(ydata)
 
 def get_covariance(data_obj):
-    xdata = data_obj.traces[0][:,0]
-    ydata = data_obj.traces[0][:, 1]
-    for i in range(1, len(data_obj.traces)):
-        xdata = np.append(xdata, data_obj.traces[i][:,0])
-        ydata = np.appendy(ydata, data_obj.traces[i][:, 1])
-    cov_mat = np.cov(np.stack(xdata, ydata))
+    xdata = data_obj.norm_traces[0][:,0]
+    ydata = data_obj.norm_traces[0][:, 1]
+    for i in range(1, len(data_obj.norm_traces)):
+        xdata = np.append(xdata, data_obj.norm_traces[i][:,0])
+        ydata = np.appendy(ydata, data_obj.norm_traces[i][:, 1])
+    cov_mat = np.cov(np.stack((xdata, ydata),axis=0))
     return cov_mat[0, 1]
 
 def get_aspect_ratio(data_obj):
@@ -67,7 +67,7 @@ def get_aspect_ratio(data_obj):
     :param data_obj:
     :return:
     """
-    return data_obj.xmax/data_obj.ymax
+    return data_obj.aspect_ratio
 
 def get_line_length(data_obj):
     """
@@ -76,12 +76,12 @@ def get_line_length(data_obj):
     :return:
     """
     total_sum = 0
-    for trace in data_obj.traces:
+    for trace in data_obj.norm_traces:
         trace_sum = 0
         for i in range(1, len(trace)):
             distance.euclidean(trace[i-1], trace[i])
         total_sum += trace_sum
-    return total_sum, total_sum/len(data_obj.traces)
+    return total_sum, total_sum/len(data_obj.norm_traces)
 
 
 
@@ -128,9 +128,9 @@ def get_horizontal_crossings(iter, data_obj):
     """
 
     #flatten all points in traces into 1 np array
-    data = data_obj.traces[0]
-    for i in range(1, len(data_obj.traces)):
-        data = np.stack(data, data_obj.traces[i])
+    data = data_obj.norm_traces[0]
+    for i in range(1, len(data_obj.norm_traces)):
+        data = np.stack(data, data_obj.norm_traces[i])
     num_points = np.shape(data)[0]
 
     #tally these and take averages at the end
@@ -144,8 +144,8 @@ def get_horizontal_crossings(iter, data_obj):
         y = ymin + (i * line_gap)
         for j in range(1, num_points - 1):
             line_crossings = []
-            p2 = data_obj[j]
-            p1 = data_obj[j-1]
+            p2 = data[j]
+            p1 = data[j-1]
             if is_hcrossing(p1, p2, y):
                 #get x value of crossing, append
                 x_intersect = -1 * ((p2[1] - y) / ((p2[1] - p1[1])/(p2[0] - p1[0])) - p2[0])
@@ -166,10 +166,10 @@ def get_vertical_crossings(iter, data_obj):
     :param data_obj:
     :return:
     """
-    # flatten all points in traces into 1 np array
-    data = data_obj.traces[0]
-    for i in range(1, len(data_obj.traces)):
-        data = np.stack(data, data_obj.traces[i])
+    # flatten all points in norm_traces into 1 np array
+    data = data_obj.norm_traces[0]
+    for i in range(1, len(data_obj.norm_traces)):
+        data = np.stack(data, data_obj.norm_traces[i])
     num_points = np.shape(data)[0]
 
     # tally these and take averages at the end
@@ -221,14 +221,14 @@ crossings_feature_map = {
 
 def extract_all_features(data_obj):
 
-    for key in global_feature_map():
+    for key in global_feature_map.keys():
         data_obj.features[global_feature_map[key]] = key(data_obj)
 
-    for key in global_double_feature_map():
+    for key in global_double_feature_map.keys():
         data_obj.features[global_double_feature_map[key][0]], data_obj.features[global_double_feature_map[key][1]] = key(data_obj)
 
     for i in range(5):
-        for key in crossings_feature_map:
+        for key in crossings_feature_map.keys():
             inds = crossings_feature_map[key]
             f1, f2, f3 = key(i, data_obj)
             data_obj.features[inds[0] + 3 * iter], \
