@@ -83,7 +83,55 @@ def get_line_length(data_obj):
         total_sum += trace_sum
     return total_sum, total_sum/len(data_obj.traces)
 
+def getAngle(p1, p2, p3):
+    """
+    returns the angle between 3 points
+    :param p1:
+    :param p2:
+    :param p3:
+    :return:
+    """
+    l12 = distance.euclidean(p1, p2)
+    l23 = distance.euclidean(p2, p3)
+    l13 = distance.euclidean(p1, p3)
+    term = (pow(l12, 2) + pow(l23, 2) - pow(l13, 2)) / 2 * l12 * l23
+    return np.arccos(term)
 
+def get_theta(i, angles):
+    theta = angles[i] - angles[i+1]
+
+def get_num_sharp_points(data_obj):
+    #list of sharp points
+    angles = []
+    for trace in data_obj.traces:
+        trace_angles = []
+        for i in range(1, np.size(trace, axis = 0) - 1):
+            trace_angles.append(trace[i-1], trace[i], trace[i+1])
+        angles.append(trace_angles)
+
+
+    #each trace has 2 sharp points by default, so initialize to this
+    V = len(data_obj.traces) * 2
+
+    for i in range(len(angles)):
+        for j in range(1, len(angles[i])):
+            thetas = []
+            theta = get_theta(j)
+            thetas.append(theta)
+            if theta == 0:
+                continue
+        delta =theta * thetas[j-1]
+        if theta < 0:
+            V += 1
+    return V
+
+def get_angle_data(data_obj):
+    angles = []
+    for trace in data_obj.traces:
+        for i in range(1, np.size(trace, axis=0) - 1):
+            angles.append(trace[i - 1], trace[i], trace[i + 1])
+    total = sum(angles)
+    return total, total/len(data_obj.traces)
 
     #loop through and compute sum of euclidean distances between each
 def is_hcrossing(p1, p2, y):
@@ -144,8 +192,8 @@ def get_horizontal_crossings(iter, data_obj):
         y = ymin + (i * line_gap)
         for j in range(1, num_points - 1):
             line_crossings = []
-            p2 = data_obj[j]
-            p1 = data_obj[j-1]
+            p2 = data[j]
+            p1 = data[j-1]
             if is_hcrossing(p1, p2, y):
                 #get x value of crossing, append
                 x_intersect = -1 * ((p2[1] - y) / ((p2[1] - p1[1])/(p2[0] - p1[0])) - p2[0])
@@ -183,8 +231,8 @@ def get_vertical_crossings(iter, data_obj):
         x = xmin + (i * line_gap)
         for j in range(1, num_points - 1):
             line_crossings = []
-            p2 = data_obj[j]
-            p1 = data_obj[j - 1]
+            p2 = data[j]
+            p1 = data[j - 1]
             if is_vcrossing(p1, p2, x):
                 # get y value of crossing, append
                 y_intersect = -1 * (((p2[0] - x) * (p2[1] - p1[1])/(p2[0] - p1[0])) - p2[1])
