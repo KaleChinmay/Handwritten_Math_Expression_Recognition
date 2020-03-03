@@ -36,9 +36,14 @@ def get_x_mean(data_obj):
     :param data_obj:
     :return:
     """
+    #print('---------------------')
+    #print(data_obj.norm_traces)
+    #print(type(data_obj.norm_traces))
+
     xdata = data_obj.norm_traces[0][:,0]
-    for i in range(1, len(data_obj.norm_traces)):
-        xdata = np.append(xdata, data_obj.norm_traces[i][:,0])
+    norm_traces_len = len(data_obj.norm_traces)
+    for i in range(1, norm_traces_len):
+        xdata = np.concatenate([xdata, data_obj.norm_traces[i][:,0]])
     return np.mean(xdata)
 
 def get_y_mean(data_obj):
@@ -48,16 +53,18 @@ def get_y_mean(data_obj):
     :return:
     """
     ydata = data_obj.norm_traces[0][:, 1]
-    for i in range(1, len(data_obj.norm_traces)):
-        ydata = np.appendy(ydata, data_obj.norm_traces[i][:, 1])
+    norm_traces_len = len(data_obj.norm_traces)
+    for i in range(1, norm_traces_len):
+        ydata = np.concatenate([ydata, data_obj.norm_traces[i][:, 1]])
     return np.mean(ydata)
 
 def get_covariance(data_obj):
     xdata = data_obj.norm_traces[0][:,0]
     ydata = data_obj.norm_traces[0][:, 1]
-    for i in range(1, len(data_obj.norm_traces)):
-        xdata = np.append(xdata, data_obj.norm_traces[i][:,0])
-        ydata = np.appendy(ydata, data_obj.norm_traces[i][:, 1])
+    norm_traces_len = len(data_obj.norm_traces)
+    for i in range(1, norm_traces_len):
+        xdata = np.concatenate([xdata, data_obj.norm_traces[i][:,0]])
+        ydata = np.concatenate([ydata, data_obj.norm_traces[i][:, 1]])
     cov_mat = np.cov(np.stack((xdata, ydata),axis=0))
     return cov_mat[0, 1]
 
@@ -78,12 +85,62 @@ def get_line_length(data_obj):
     total_sum = 0
     for trace in data_obj.norm_traces:
         trace_sum = 0
-        for i in range(1, len(trace)):
+        trace_len = len(trace)
+        for i in range(1, trace_len):
             distance.euclidean(trace[i-1], trace[i])
         total_sum += trace_sum
     return total_sum, total_sum/len(data_obj.norm_traces)
 
+def getAngle(p1, p2, p3):
+    """
+    returns the angle between 3 points
+    :param p1:
+    :param p2:
+    :param p3:
+    :return:
+    """
+    l12 = distance.euclidean(p1, p2)
+    l23 = distance.euclidean(p2, p3)
+    l13 = distance.euclidean(p1, p3)
+    term = (pow(l12, 2) + pow(l23, 2) - pow(l13, 2)) / 2 * l12 * l23
+    return np.arccos(term)
 
+def get_theta(i, angles):
+    theta = angles[i] - angles[i+1]
+
+def get_num_sharp_points(data_obj):
+    #list of sharp points
+    angles = []
+    for trace in data_obj.traces:
+        trace_angles = []
+        for i in range(1, np.size(trace, axis = 0) - 1):
+            trace_angles.append(trace[i-1], trace[i], trace[i+1])
+        angles.append(trace_angles)
+
+
+    #each trace has 2 sharp points by default, so initialize to this
+    V = len(data_obj.traces) * 2
+    angle_len = len(angles)
+    for i in range(angle_len):
+        angle_i_len = len(angles[i])
+        for j in range(1, angle_i_len):
+            thetas = []
+            theta = get_theta(j)
+            thetas.append(theta)
+            if theta == 0:
+                continue
+        delta =theta * thetas[j-1]
+        if theta < 0:
+            V += 1
+    return V
+
+def get_angle_data(data_obj):
+    angles = []
+    for trace in data_obj.traces:
+        for i in range(1, np.size(trace, axis=0) - 1):
+            angles.append(trace[i - 1], trace[i], trace[i + 1])
+    total = sum(angles)
+    return total, total/len(data_obj.traces)
 
     #loop through and compute sum of euclidean distances between each
 def is_hcrossing(p1, p2, y):
@@ -94,9 +151,13 @@ def is_hcrossing(p1, p2, y):
     :param y: y value
     :return:
     """
-    if p1[0, 1] <= y and p2[0, 1] >=y:
+    #print('y: ',y)
+    #print('y1: ',p1[1])
+    #print('y2: ',p2[1])
+
+    if p1[1] <= y and p2[1] >=y:
         return True
-    elif p1[0, 1] >= y and p2[0, 1] <=y:
+    elif p1[1] >= y and p2[1] <=y:
         return True
     else:
         return False
@@ -109,9 +170,9 @@ def is_vcrossing(p1, p2, x):
     :param x: x value
     :return:
     """
-    if p1[0, 0] <= x and p2[0, 0] >=x:
+    if p1[0] <= x and p2[0] >=x:
         return True
-    elif p1[0, 0] >= x and p2[0, 0] <=x:
+    elif p1[0] >= x and p2[0] <=x:
         return True
     else:
         return False
@@ -128,11 +189,12 @@ def get_horizontal_crossings(iter, data_obj):
     """
 
     #flatten all points in traces into 1 np array
+    '''
     data = data_obj.norm_traces[0]
     for i in range(1, len(data_obj.norm_traces)):
-        data = np.stack(data, data_obj.norm_traces[i])
+        data = np.stack((data, data_obj.norm_traces[i]),axis=0)
     num_points = np.shape(data)[0]
-
+    '''
     #tally these and take averages at the end
     cross_avgs = []
     first_points_avgs = []
@@ -142,18 +204,26 @@ def get_horizontal_crossings(iter, data_obj):
 
     for i in range(9):
         y = ymin + (i * line_gap)
-        for j in range(1, num_points - 1):
-            line_crossings = []
-            p2 = data[j]
-            p1 = data[j-1]
-            if is_hcrossing(p1, p2, y):
-                #get x value of crossing, append
-                x_intersect = -1 * ((p2[1] - y) / ((p2[1] - p1[1])/(p2[0] - p1[0])) - p2[0])
-                line_crossings.append[x_intersect]
+        line_crossings = []
+        norm_traces_len  = len(data_obj.norm_traces)
+        for k in range(norm_traces_len):
+            data = data_obj.norm_traces[k]
+            data_len  = len(data)
+            for j in range(1, data_len):
+                p2 = data[j]
+                p1 = data[j-1]
+                if is_hcrossing(p1, p2, y):
+                    #get x value of crossing, append
+                    #x_intersect = -1 * ((p2[1] - y) / ((p2[1] - p1[1])/(p2[0] - p1[0])) - p2[0])
+                    if ( p2[1]==p1[1]):
+                        line_crossings.extend([p1[0],p2[0]])
+                    else:
+                        x_intersect = -1*((((p2[0]-p1[0])*(p2[1]-y))/p2[1]-p1[1])-p2[0])
+                        line_crossings.append(x_intersect)
 
         cross_avgs.append(len(line_crossings))
         first_points_avgs.append(0) if len(line_crossings) == 0 else first_points_avgs.append(line_crossings[0])
-        last_points_avgs.append(0) if len(line_crossings) == 0 else last_points_avgs.append([line_crossings[-1]])
+        last_points_avgs.append(0) if len(line_crossings) == 0 else last_points_avgs.append(line_crossings[-1])
 
     #get averages
     return sum(cross_avgs)/len(cross_avgs), sum(first_points_avgs)/len(first_points_avgs), sum(last_points_avgs)/len(last_points_avgs)
@@ -167,10 +237,10 @@ def get_vertical_crossings(iter, data_obj):
     :return:
     """
     # flatten all points in norm_traces into 1 np array
-    data = data_obj.norm_traces[0]
-    for i in range(1, len(data_obj.norm_traces)):
-        data = np.stack(data, data_obj.norm_traces[i])
-    num_points = np.shape(data)[0]
+  #  data = data_obj.norm_traces[0]
+   # for i in range(1, len(data_obj.norm_traces)):
+        #data = np.stack((data, data_obj.norm_traces[i]),axis = 0)
+    #num_points = np.shape(data)[0]
 
     # tally these and take averages at the end
     cross_avgs = []
@@ -181,18 +251,26 @@ def get_vertical_crossings(iter, data_obj):
 
     for i in range(9):
         x = xmin + (i * line_gap)
-        for j in range(1, num_points - 1):
-            line_crossings = []
-            p2 = data_obj[j]
-            p1 = data_obj[j - 1]
-            if is_vcrossing(p1, p2, x):
-                # get y value of crossing, append
-                y_intersect = -1 * (((p2[0] - x) * (p2[1] - p1[1])/(p2[0] - p1[0])) - p2[1])
-                line_crossings.append[y_intersect]
+        line_crossings = []
+        norm_traces_len  = len(data_obj.norm_traces)
+        for k in range(norm_traces_len):
+            data = data_obj.norm_traces[k]
+            data_len = len(data)
+            for j in range(1, data_len):
+                p2 = data[j]
+                p1 = data[j - 1]
+                if is_vcrossing(p1, p2, x):
+                    # get y value of crossing, append
+                    #y_intersect = -1 * (((p2[0] - x) * (p2[1] - p1[1])/(p2[0] - p1[0])) - p2[1])```                                                                                                            
+                    if(p2[0]==p1[0]):
+                        line_crossings.extend([p1[1],p2[1]])
+                    else:
+                        y_intersect = -1*((((p2[1]-p2[1])*(p2[0]-x))/(p2[0]-p1[0]))*p2[1])
+                        line_crossings.append(y_intersect)
 
         cross_avgs.append(len(line_crossings))
         first_points_avgs.append(0) if len(line_crossings) == 0 else first_points_avgs.append(line_crossings[0])
-        last_points_avgs.append(0) if len(line_crossings) == 0 else last_points_avgs.append([line_crossings[-1]])
+        last_points_avgs.append(0) if len(line_crossings) == 0 else last_points_avgs.append(line_crossings[-1])
 
     # get averages
     return sum(cross_avgs) / len(cross_avgs), sum(first_points_avgs) / len(first_points_avgs), sum(
@@ -207,7 +285,6 @@ global_feature_map = {
     get_covariance : 3,
     get_aspect_ratio : 4
 }
-
 #global features map for 2 return value functions
 global_double_feature_map = {
     get_line_length : (35, 36)
@@ -231,9 +308,9 @@ def extract_all_features(data_obj):
         for key in crossings_feature_map.keys():
             inds = crossings_feature_map[key]
             f1, f2, f3 = key(i, data_obj)
-            data_obj.features[inds[0] + 3 * iter], \
-            data_obj.features[inds[1] + 3 * iter], \
-            data_obj.features[inds[2]] = \
+            data_obj.features[inds[0] + 3 * i], \
+            data_obj.features[inds[1] + 3 * i], \
+            data_obj.features[inds[2] + 3 * i] = \
                 f1, f2, f3
     # for key in crossings_feature_map:
     #     inds = crossings_feature_map[key]

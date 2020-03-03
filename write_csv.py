@@ -22,9 +22,19 @@ def generate_file_list():
             file_writer.writerow([file_name])
 
 
-'''
-def generate_features_table():
+
+def generate_features_table(data_object_list):
+    location = '.\\Data\\'
+    with open('.\\Data\\feature_list.csv','w',newline='') as feature_list:
+        file_writer = csv.writer(feature_list, delimiter=',')
+        for i in range(len(data_object_list)):
+            row_list = []
+            for key in sorted(data_object_list[i].features.keys()):
+                row_list.append(data_object_list[i].features[key])
+            row_list.append(data_object_list[i].gt)
+            file_writer.writerow(row_list)
+
+
     
-'''
 
 
