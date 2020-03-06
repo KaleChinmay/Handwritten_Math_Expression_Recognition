@@ -1,5 +1,3 @@
-character_Data
-
 import copy
 import numpy as np
 
