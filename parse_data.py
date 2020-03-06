@@ -13,6 +13,14 @@ def get_gt():
     return gt_dict
 
 
+def get_junk_gt():
+    junk_gt_dict = {}
+    with open('.\\Data\\trainingJunk\\junk_GT_v3.txt','r') as junk_gt:
+        for line in junk_gt:
+            temp_list = line.split(',')
+            junk_gt_dict[temp_list[0]] = temp_list[1]
+    return junk_gt_dict
+
 
 def remove_dups(data):
 	data_trace_len = len(data.trace) 
@@ -36,6 +44,8 @@ def parse_data():
 	with open('.\\Data\\file_list.csv','r') as trace_file_list:
 		data = csv.reader(trace_file_list,delimiter=',')
 		gt_dict = get_gt()
+		gt_junk_dict = get_junk_gt()
+		gt_dict.update(gt_junk_dict)
 		data_obj_list = []
 		i = 0
 		data_len = len(gt_dict.keys())

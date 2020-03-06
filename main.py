@@ -9,9 +9,10 @@ from os import path
 
 
 def main():
-	'''
+	
 	print('Main Program Begins : ')
 	write_csv.generate_file_list()
+	write_csv.generate_junk_file_list()
 	print('File list Generated')
 	if path.exists('intermediate.txt'):
 		with open('intermediate.txt','rb') as pickle_file:
@@ -35,7 +36,7 @@ def main():
 			feature_extraction.extract_all_features(data_object)
 		write_csv.generate_features_table(data_object_list)
 		print('data_normalized')
-	'''
+	
 	classification_driver.classify()
 	#Feature Extraction follows
 

@@ -22,6 +22,15 @@ def generate_file_list():
             file_writer.writerow([file_name])
 
 
+def generate_junk_file_list():
+    location = '.\\Data\\trainingJunk\\'
+    with open('.\\Data\\file_list.csv','a+',newline='') as file_list:
+        file_writer = csv.writer(file_list, delimiter=',')
+        for i in range(74283):
+            file_name = location + 'junk' + str(i) + '.inkml'
+            file_writer.writerow([file_name])    
+
+
 
 def generate_features_table(data_object_list):
     location = '.\\Data\\'
