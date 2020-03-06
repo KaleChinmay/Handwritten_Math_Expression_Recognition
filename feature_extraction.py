@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.spatial import distance
+import scipy.spatial.distance
 
 BOUNDARY_DIM = (2.0/5.0)
 NUM_LINES = 9
@@ -88,7 +88,7 @@ def get_line_length(data_obj):
         trace_sum = 0
         trace_len = len(trace)
         for i in range(1, trace_len):
-            distance.euclidean(trace[i-1], trace[i])
+            trace_sum += distance.euclidean(trace[i-1], trace[i])
         total_sum += trace_sum
     return total_sum, total_sum/len(data_obj.norm_traces)
 
@@ -284,11 +284,13 @@ global_feature_map = {
     get_x_mean: 1,
     get_y_mean: 2,
     get_covariance : 3,
-    get_aspect_ratio : 4
+    get_aspect_ratio : 4,
+    get_num_sharp_points : 39
 }
 #global features map for 2 return value functions
 global_double_feature_map = {
     get_line_length : (35, 36)
+    get_angle_data : (37, 38)
 }
 
 #holds features number 5 through 34
