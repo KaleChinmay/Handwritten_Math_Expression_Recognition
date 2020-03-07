@@ -7,13 +7,13 @@ import numpy as np
 from character_data import Character_Data
 import write_csv
 
+
 def generate_inkml(data_obj):
     """
     generates an inkml file from a data object. used to help test preprocessing features
     :param data_obj:
     :return:
     """
-
 
 
 def interpolate_trace(old_trace):
@@ -25,14 +25,14 @@ def interpolate_trace(old_trace):
     # get d
     n = len(old_trace)
     sumdist = 0
-    for i in range(n-1):
+    for i in range(n - 1):
         sumdist += distance.euclidean(old_trace[i], old_trace[i + 1])
-    dist = sumdist/n
+    dist = sumdist / n
 
     skip = False
     previous = 0
 
-    #interpolate points
+    # interpolate points
     new_trace = []
     for i in range(1, n):
         if i != 0 and distance.euclidean(old_trace[previous], old_trace[i] < dist):
@@ -41,34 +41,34 @@ def interpolate_trace(old_trace):
             continue
 
         if skip:
-            #calculate ldiff
+            # calculate ldiff
             l = 0
             for j in range(previous, i):
-                l += distance.euclidean(old_trace[j], old_trace[j+1])
+                l += distance.euclidean(old_trace[j], old_trace[j + 1])
             ldiff = l - dist
 
             skip = False
             previous = i
 
         else:
-            new_trace.append(old_trace[i-1])
+            new_trace.append(old_trace[i - 1])
             if old_trace[i - 1][0] == old_trace[i][0]:
                 continue
             # calculate and append new point
-            slope = (old_trace[i][1] - old_trace[i-1][1]) / (old_trace[i][0] - old_trace[i-1][0])
+            slope = (old_trace[i][1] - old_trace[i - 1][1]) / (old_trace[i][0] - old_trace[i - 1][0])
             new_point = []
             # get new x
-            if old_trace[i][0] > old_trace[i-1][0]:
-                new_point.append(old_trace[i-1][0] + np.sqrt(pow(dist, 2) / (pow(slope, 2) + 1)))
+            if old_trace[i][0] > old_trace[i - 1][0]:
+                new_point.append(old_trace[i - 1][0] + np.sqrt(pow(dist, 2) / (pow(slope, 2) + 1)))
             else:
-                new_point.append(old_trace[i-1][0] - np.sqrt(pow(dist, 2) / (pow(slope, 2) + 1)))
+                new_point.append(old_trace[i - 1][0] - np.sqrt(pow(dist, 2) / (pow(slope, 2) + 1)))
             # get new y
-            if (old_trace[i-1][1] < old_trace[i][1]):
-                new_point.append(old_trace[i-1][1] + distance)
+            if (old_trace[i - 1][1] < old_trace[i][1]):
+                new_point.append(old_trace[i - 1][1] + distance)
             elif old_trace[i][1] == old_trace[i + 1][1]:
                 new_point.append(slope * new_point[0] + old_trace[i][1] - slope * old_trace[i][0])
             else:
-                new_point.append(old_trace[i-1][1] - dist)
+                new_point.append(old_trace[i - 1][1] - dist)
 
             new_trace.append(new_point)
 
@@ -77,12 +77,13 @@ def interpolate_trace(old_trace):
 
 def get_gt():
     gt_dict = {}
-    with open('.\\Data\\trainingSymbols\\iso_GT.txt','r') as iso_gt:
+    with open('.\\Data\\trainingSymbols\\iso_GT.txt', 'r') as iso_gt:
         for line in iso_gt:
             temp_list = line.split(',')
             gt_dict[temp_list[0]] = temp_list[1]
     return gt_dict
-    
+
+
 # def readFile():
 #     location = '.\\Data\\trainingSymbols\\'
 #     with open('.\\Data\\meta_data.csv','w+') as meta_file:
@@ -113,7 +114,7 @@ def create_objs(file, gt_dict):
     objects = {}
     location = '.\\Data\\trainingSymbols\\'
     with open('.\\Data\\meta_data.csv', 'w+') as meta_file:
-        for i in range(171,85801):
+        for i in range(171, 85801):
             # with open('.\\Data\\meta_data.csv','w+'):
             file_name = location + 'iso' + str(i) + '.inkml'
             with open(file_name) as file:
@@ -130,12 +131,14 @@ def create_objs(file, gt_dict):
                 objects[name] = data_obj
         return objects
 
+
 def preprocess_objects(data_obj):
     """
     makes preprocessing calls on the object
     :param data:
     :return:
     """
+
 
 def preprocess_data(csv_file):
     gt_dict = get_gt()
@@ -145,7 +148,3 @@ def preprocess_data(csv_file):
         preprocess_objects(data[key])
 
 
-    
-    
-if __name__ == '__main__':
-    main()
