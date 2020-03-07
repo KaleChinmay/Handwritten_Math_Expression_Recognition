@@ -1,9 +1,6 @@
 """
-
 the driver file for the classification project
 calls functions to preprocess, extract features, classify and evaluation
-
-
 """
 import feature_extraction
 import write_csv
@@ -20,6 +17,17 @@ import numpy as np
 from sklearn.metrics import accuracy_score
 import joblib
 import csv
+import sys
+data_type_map = {
+	"0" : "no_junk",
+	"1" : "with_junk",
+	"2" : "bonus",
+	"3" : "junk_only"
+}
+classifier_type_map = {
+	"0" : "kd",
+	"1" : "rfc"
+}
 
 features_dict = {
 	0 : 'No of Traces',
@@ -70,7 +78,7 @@ features_dict = {
 
 def classify():
 	print(features_dict)
-	data = pd.read_csv('.\\Data\\feature_list.csv', header=None,  index_col='ID',
+	data = pd.read_csv('.\\Data\\feature_list_'+data_type_map[sys.argv[1]]+'.csv', header=None,  index_col='ID',
 		usecols=features_dict.keys() , names = [features_dict[key] for key in features_dict.keys()])
 
 
@@ -83,7 +91,7 @@ def classify():
 	print(data.head(15))
 	#print(data.describe())
 
-	features = data.drop(columns=['Class label'], axis=1) 
+	features = data.drop(columns=['Class label'], axis=1)
 	labels = np.array(data['Class label'])
 
 	le = pp.LabelEncoder()
@@ -91,7 +99,7 @@ def classify():
 	print('Labels : ',np.unique(encoded_labels))
 	print(type(encoded_labels))
 
-	train_features, test_features, train_labels, test_labels = train_test_split(features, encoded_labels, 
+	train_features, test_features, train_labels, test_labels = train_test_split(features, encoded_labels,
 		test_size = 0.3, random_state = 42, stratify=encoded_labels)
 	print(type(test_labels))
 
@@ -100,7 +108,7 @@ def classify():
 
 
 
-	
+
 	'''
 	train_labels_count = train_labels.size
 	test_labels_count = test_labels.size
@@ -109,9 +117,7 @@ def classify():
 	print('train_labels: ',unique_train_labels)
 	print('Count : ',unique_train_labels_count)
 	#print('Priors : ', unique_train_labels_count/train_labels_count)
-
 	unique_test_labels, unique_test_labels_count = np.unique(test_labels, return_counts=True)
-
 	print('test_labels : ',unique_test_labels)
 	print('Count : ',unique_test_labels_count)
 	#print('Priors : ', unique_test_labels_count/test_labels_count)
@@ -122,9 +128,12 @@ def classify():
 	#row_count = data[0].count()
 	#column_count = 37
 	#classifier = RandomForestClassifier(n_estimators = 100, random_state = 42)
-	classifier = KNeighborsClassifier(n_neighbors=1,algorithm='kd_tree')
+	if sys.argv[2] == 0:
+		classifier = KNeighborsClassifier(n_neighbors=1,algorithm='kd_tree')
+	else:
+		classifier = RandomForestClassifier(n_estimators=100, random_state=42)
 	model = classifier.fit(train_features, train_labels)
-	with open('rfc_model_no_junk.txt','wb') as f:
+	with open('model_'+classifier_type_map[sys.arvg[2]]+"_"+data_type_map[sys.argv[1]]+'.txt','wb') as f:
 		joblib.dump(model, f, compress=3)
 	predictions = model.predict(test_features)
 	accuracy = accuracy_score(predictions, test_labels)
@@ -143,5 +152,3 @@ def classify():
 
 
 #def split_data(data, labels):
-
-
