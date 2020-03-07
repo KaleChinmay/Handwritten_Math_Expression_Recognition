@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import accuracy_score
 import joblib
-
+import csv
 
 features_dict = {
 	0 : 'No of Traces',
@@ -128,16 +128,17 @@ def classify():
 		joblib.dump(model, f, compress=3)
 	predictions = model.predict(test_features)
 	accuracy = accuracy_score(predictions, test_labels)
-	print(predictions)
+	#print(predictions)
 
 	predictions = le.inverse_transform(predictions)
 
-	print(accuracy)
-	print(train_labels)
+	#print(accuracy)
+	#print(train_labels)
 	test_features['predictions'] = predictions
 
 	ouput_data = test_features['predictions']
-	ouput_data.to_csv('.\\Data\\prediction_output.csv', index=True, header=None)
+	#print(ouput_data)
+	ouput_data.to_csv('.\\Data\\prediction_output.csv', index=True, header=None,quoting=csv.QUOTE_NONE)
 
 
 
