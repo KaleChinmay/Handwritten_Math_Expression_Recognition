@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.spatial.distance
+import scipy.spatial.distance as distance
 
 BOUNDARY_DIM = (2.0/5.0)
 NUM_LINES = 9
@@ -104,29 +104,33 @@ def getAngle(p1, p2, p3):
     l23 = distance.euclidean(p2, p3)
     l13 = distance.euclidean(p1, p3)
     term = (pow(l12, 2) + pow(l23, 2) - pow(l13, 2)) / 2 * l12 * l23
-    return np.arccos(term)
+    angle = np.arccos(term)
+    #print('Angle : ',angle)
+    return angle
 
 def get_theta(i, angles):
-    theta = angles[i] - angles[i+1]
+    theta = angles[i] - angles[i-1]
 
 def get_num_sharp_points(data_obj):
     #list of sharp points
     angles = []
-    for trace in data_obj.traces:
+    for trace in data_obj.norm_traces:
         trace_angles = []
-        for i in range(1, np.size(trace, axis = 0) - 1):
-            trace_angles.append(trace[i-1], trace[i], trace[i+1])
+        for i in range(1, np.size(trace, axis = 1) - 1):
+            trace_angles.append(getAngle(trace[i-1], trace[i], trace[i+1]))
         angles.append(trace_angles)
 
 
     #each trace has 2 sharp points by default, so initialize to this
-    V = len(data_obj.traces) * 2
+    V = len(data_obj.norm_traces) * 2
     angle_len = len(angles)
+    #print(angle_len)
     for i in range(angle_len):
         angle_i_len = len(angles[i])
         for j in range(1, angle_i_len):
             thetas = []
-            theta = get_theta(j)
+            #print('j: ',j)
+            theta = get_theta(j, angles)
             thetas.append(theta)
             if theta == 0:
                 continue
@@ -137,11 +141,11 @@ def get_num_sharp_points(data_obj):
 
 def get_angle_data(data_obj):
     angles = []
-    for trace in data_obj.traces:
+    for trace in data_obj.norm_traces:
         for i in range(1, np.size(trace, axis=0) - 1):
-            angles.append(trace[i - 1], trace[i], trace[i + 1])
+            angles.append(getAngle(trace[i - 1], trace[i], trace[i + 1]))
     total = sum(angles)
-    return total, total/len(data_obj.traces)
+    return total, total/len(data_obj.norm_traces)
 
     #loop through and compute sum of euclidean distances between each
 def is_hcrossing(p1, p2, y):
@@ -284,12 +288,12 @@ global_feature_map = {
     get_x_mean: 1,
     get_y_mean: 2,
     get_covariance : 3,
-    get_aspect_ratio : 4,
-    get_num_sharp_points : 39
+    get_aspect_ratio : 4
+    #get_num_sharp_points : 39
 }
 #global features map for 2 return value functions
 global_double_feature_map = {
-    get_line_length : (35, 36)
+    get_line_length : (35, 36),
     get_angle_data : (37, 38)
 }
 

@@ -2,6 +2,10 @@
 script to generate a csv file that lists all inkml files needed for classifier
 """
 import csv
+import pandas as pd
+import numpy as np
+import copy
+from sklearn.model_selection import train_test_split
 
 
 def generate_dummy_data():
@@ -40,10 +44,29 @@ def generate_features_table(data_object_list):
             row_list = []
             for key in sorted(data_object_list[i].features.keys()):
                 row_list.append(data_object_list[i].features[key])
+            row_list.append(data_object_list[i].id)
             row_list.append(data_object_list[i].gt)
+            
             file_writer.writerow(row_list)
 
 
+
+def write_output_csv_files(data):
     
+    #temp_data = copy.deepcopy(data)
+    #with junk
+    train_data_junk, test_data_junk = train_test_split(data,
+        test_size = 0.3)
+    train_data_junk.to_csv('.\\Data\\train_junk.csv', index=False)
+    test_data_junk.to_csv('.\\Data\\test_junk.csv', index=False)
+
+    #without junk
+    data_without_junk = data[data['Class label']!='junk']
+    train_data_w_junk, test_data_w_junk = train_test_split(data_without_junk,
+        test_size = 0.3)
+    train_data_w_junk.to_csv('.\\Data\\train_w_junk.csv', index=False)
+    test_data_w_junk.to_csv('.\\Data\\test_w_junk.csv', index=False)
 
 
+
+    #with open
