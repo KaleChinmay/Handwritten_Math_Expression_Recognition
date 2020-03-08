@@ -55,7 +55,7 @@ def generate_features_table(data_object_list,feature_file_name):
             file_writer.writerow(row_list)
 
 
-
+'''
 def write_output_csv_files(data):
 
     #temp_data = copy.deepcopy(data)
@@ -71,3 +71,4 @@ def write_output_csv_files(data):
         test_size = 0.3)
     train_data_w_junk.to_csv(data_folder+'train_w_junk.csv', index=False)
     test_data_w_junk.to_csv(data_folder+'test_w_junk.csv', index=False)
+'''
