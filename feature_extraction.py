@@ -1,7 +1,6 @@
 import numpy as np
 import scipy.spatial.distance as distance
 
-
 BOUNDARY_DIM = (2.0/5.0)
 NUM_LINES = 9
 
@@ -105,12 +104,10 @@ def getAngle(p1, p2, p3):
     l23 = distance.euclidean(p2, p3)
     l13 = distance.euclidean(p1, p3)
     term = (pow(l12, 2) + pow(l23, 2) - pow(l13, 2)) / 2 * l12 * l23
-    angle = np.arccos(term)
-    #print('Angle : ',angle)
-    return angle
+    return np.arccos(term)
 
 def get_theta(i, angles):
-    theta = angles[i] - angles[i-1]
+    theta = angles[i] - angles[i+1]
 
 def get_num_sharp_points(data_obj):
     #list of sharp points
@@ -123,30 +120,28 @@ def get_num_sharp_points(data_obj):
 
 
     #each trace has 2 sharp points by default, so initialize to this
-    V = len(data_obj.norm_traces) * 2
+    V = len(data_obj.traces) * 2
     angle_len = len(angles)
-    #print(angle_len)
-    for i in range(angle_len):
+    for i in range(angle_len): #for every trace
         angle_i_len = len(angles[i])
-        for j in range(1, angle_i_len):
+        for j in range(0, angle_i_len-1):
             thetas = []
-            #print('j: ',j)
-            theta = get_theta(j, angles)
+            theta = get_theta(j)
             thetas.append(theta)
             if theta == 0:
-                continue
-        delta =theta * thetas[j-1]
-        if theta < 0:
-            V += 1
+                    continue
+            delta =theta * thetas[j-1]
+            if theta < 0:
+                V += 1
     return V
 
 def get_angle_data(data_obj):
     angles = []
-    for trace in data_obj.norm_traces:
+    for trace in data_obj.traces:
         for i in range(1, np.size(trace, axis=0) - 1):
-            angles.append(getAngle(trace[i - 1], trace[i], trace[i + 1]))
+            angles.append(trace[i - 1], trace[i], trace[i + 1])
     total = sum(angles)
-    return total, total/len(data_obj.norm_traces)
+    return total, total/len(data_obj.traces)
 
     #loop through and compute sum of euclidean distances between each
 def is_hcrossing(p1, p2, y):
@@ -228,11 +223,16 @@ def get_horizontal_crossings(iter, data_obj):
                         line_crossings.append(x_intersect)
 
         cross_avgs.append(len(line_crossings))
-        first_points_avgs.append(0) if len(line_crossings) == 0 else first_points_avgs.append(line_crossings[0])
-        last_points_avgs.append(0) if len(line_crossings) == 0 else last_points_avgs.append(line_crossings[-1])
+        # first_points_avgs.append(0) if len(line_crossings) == 0 else first_points_avgs.append(line_crossings[0])
+        # last_points_avgs.append(0) if len(line_crossings) == 0 else last_points_avgs.append(line_crossings[-1])
+        if len(line_crossings != 0):
+            first_points_avgs.append(line_crossings[0])
+            last_points_avgs.append(line_crossings[-1])
 
     #get averages
-    return sum(cross_avgs)/len(cross_avgs), sum(first_points_avgs)/len(first_points_avgs), sum(last_points_avgs)/len(last_points_avgs)
+    return sum(cross_avgs)/len(cross_avgs), \
+           sum(first_points_avgs)/len(first_points_avgs) if len(first_points_avgs) !=0 else 0, \
+           sum(last_points_avgs)/len(last_points_avgs) if len(last_points_avgs) != 0 else 0
 
 
 def get_vertical_crossings(iter, data_obj):
@@ -274,12 +274,20 @@ def get_vertical_crossings(iter, data_obj):
                         line_crossings.append(y_intersect)
 
         cross_avgs.append(len(line_crossings))
-        first_points_avgs.append(0) if len(line_crossings) == 0 else first_points_avgs.append(line_crossings[0])
-        last_points_avgs.append(0) if len(line_crossings) == 0 else last_points_avgs.append(line_crossings[-1])
+        # first_points_avgs.append(0) if len(line_crossings) == 0 else first_points_avgs.append(line_crossings[0])
+        # last_points_avgs.append(0) if len(line_crossings) == 0 else last_points_avgs.append(line_crossings[-1])
 
     # get averages
-    return sum(cross_avgs) / len(cross_avgs), sum(first_points_avgs) / len(first_points_avgs), sum(
-        last_points_avgs) / len(last_points_avgs)
+    # return sum(cross_avgs) / len(cross_avgs), sum(first_points_avgs) / len(first_points_avgs), sum(
+    #     last_points_avgs) / len(last_points_avgs)
+        if len(line_crossings != 0):
+            first_points_avgs.append(line_crossings[0])
+            last_points_avgs.append(line_crossings[-1])
+
+    #get averages
+    return sum(cross_avgs)/len(cross_avgs), \
+           sum(first_points_avgs)/len(first_points_avgs) if len(first_points_avgs) !=0 else 0, \
+           sum(last_points_avgs)/len(last_points_avgs) if len(last_points_avgs) != 0 else 0
 
 
 #holds features 0 through 4, 35
@@ -288,8 +296,8 @@ global_feature_map = {
     get_x_mean: 1,
     get_y_mean: 2,
     get_covariance : 3,
-    get_aspect_ratio : 4
-    #get_num_sharp_points : 39
+    get_aspect_ratio : 4,
+    get_num_sharp_points : 39
 }
 #global features map for 2 return value functions
 global_double_feature_map = {
