@@ -9,6 +9,9 @@ from sklearn import preprocessing as pp
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import tree
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import VotingClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 import preprocessing
 import pandas as pd
@@ -19,6 +22,7 @@ from sklearn.metrics import accuracy_score
 import joblib
 import csv
 import sys
+from sklearn import svm
 
 
 
@@ -103,12 +107,20 @@ def classify(data, classifier_param, junk_param, train_param, testing_data=None)
 				print('Using KDTree')
 				classifier = KNeighborsClassifier(n_neighbors=1,algorithm='kd_tree')
 			elif(classifier_param == '1'):
-				print('Using RandomForest')
-				classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+				print('Using Ensemble')
+				#model1 = LogisticRegression(random_state=1)
+				#model2 = tree.DecisionTreeClassifier(random_state=1)
+				classifier = RandomForestClassifier(n_estimators=150, random_state=42)
+
+				#classifier = VotingClassifier(estimators=[('lr', model1), ('rf', model3)], voting='hard')
+				#classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+				#classifier = AdaBoostClassifier(n_estimators=100, random_state=42)
+
 			else:
 				print('Invalid input, returning')
 				return None, None
 			model = classifier.fit(features, train_labels)
+			print('Model created')
 			model_info = [model,le]
 			with open(classifier_file,'wb') as f:
 				joblib.dump(model_info, f, compress=3)
