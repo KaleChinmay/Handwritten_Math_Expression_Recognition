@@ -27,7 +27,7 @@ from sklearn import svm
 
 
 
-data_folder = '.\\Data\\'
+data_folder = './Data/'
 
 data_type_map = {
 	"0" : "no_junk",

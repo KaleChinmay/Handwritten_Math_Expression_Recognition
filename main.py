@@ -16,7 +16,7 @@ sys.argv[4] = Split data  1 = Dont split, train on all data, 0 split and train
 
 """
 
-data_folder = '.\\Data\\'
+data_folder = './Data/'
 
 def main():
 

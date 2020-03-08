@@ -5,7 +5,7 @@ import write_csv
 
 BOUNDARY_DIM = (2.0/5.0)
 NUM_LINES = 9
-DATA_FOLDER = '.\\Data\\'
+DATA_FOLDER = './Data/'
 #TODO: change get_line_length from average length per trace to average length across all traces
 #TODO: calculate sum and average of all angles in a new function
 #TODO: calculate the number of sharp points - maybe this can happen inside the function above . its in reference 22 of zannibis

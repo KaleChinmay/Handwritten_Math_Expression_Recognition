@@ -7,11 +7,11 @@ from os import path
 import pickle
 
 
-data_folder = '.\\Data\\'
+data_folder = './Data/'
 
 
 def get_gt(gt_location):
-	#gt_location = 'trainingSymbols\\iso_GT.txt'
+	#gt_location = 'trainingSymbols/iso_GT.txt'
 	gt_dict = {}
 	with open(data_folder+gt_location,'r') as gt:
 		for line in gt:
@@ -89,11 +89,11 @@ def parse_data(junk_param):
 	junk_data_obj_list = []
 
 	symbol_data_obj_list = serializa_data_obj_list('symbols_objs.txt', 
-		write_csv.SYMBOL_INKML_LIST_FILE,'trainingSymbols\\iso_GT.txt', junk_param)
+		write_csv.SYMBOL_INKML_LIST_FILE,'trainingSymbols/iso_GT.txt', junk_param)
 
 	junk_data_obj_list= serializa_data_obj_list('junk_objs.txt', 
-		write_csv.JUNK_INKML_LIST_FILE,'trainingJunk\\junk_GT_v3.txt', junk_param)
+		write_csv.JUNK_INKML_LIST_FILE,'trainingJunk/junk_GT_v3.txt', junk_param)
 
 	test_data_obj_list = serializa_data_obj_list('test_objs.txt',
-		write_csv.TEST_INKML_LIST_FILE,'testSymbols\\symbols_with_junk_GT.txt' , 2)
+		write_csv.TEST_INKML_LIST_FILE,'testSymbols/symbols_with_junk_GT.txt' , 2)
 	return symbol_data_obj_list , junk_data_obj_list, test_data_obj_list

@@ -10,7 +10,7 @@ from classification_driver import data_type_map
 import sys
 
 
-data_folder = '.\\Data\\'
+data_folder = './Data/'
 SYMBOL_INKML_LIST_FILE = 'file_list_no_junk.csv'
 JUNK_INKML_LIST_FILE = 'file_list_junk.csv'
 TEST_INKML_LIST_FILE = 'test_file_list.csv'

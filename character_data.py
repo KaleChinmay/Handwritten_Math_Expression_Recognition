@@ -7,7 +7,7 @@ class Character_Data:
         self.gt = ''
         self.id = 1
         self.trace = []
-        self.location = '.\\Data\\trainingSymbols\\'
+        self.location = './Data/trainingSymbols/'
         self.filename = ''
         self.name = ''
         self.max_x_point = None
