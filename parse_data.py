@@ -2,27 +2,22 @@ from character_data import Character_Data
 import bs4
 import csv
 import sys
+import write_csv
+from os import path
+import pickle
 
 
+data_folder = '.\\Data\\'
 
 
-
-def get_gt():
-    gt_dict = {}
-    with open('.\\Data\\trainingSymbols\\iso_GT.txt','r') as iso_gt:
-        for line in iso_gt:
-            temp_list = line.split(',')
-            gt_dict[temp_list[0]] = temp_list[1]
-    return gt_dict
-
-
-def get_junk_gt():
-    junk_gt_dict = {}
-    with open('.\\Data\\trainingJunk\\junk_GT_v3.txt','r') as junk_gt:
-        for line in junk_gt:
-            temp_list = line.split(',')
-            junk_gt_dict[temp_list[0]] = temp_list[1]
-    return junk_gt_dict
+def get_gt(gt_location):
+	#gt_location = 'trainingSymbols\\iso_GT.txt'
+	gt_dict = {}
+	with open(data_folder+gt_location,'r') as gt:
+		for line in gt:
+			temp_list = line.split(',')
+			gt_dict[temp_list[0]] = temp_list[1]
+	return gt_dict
 
 
 def remove_dups(data):
@@ -42,67 +37,58 @@ def remove_dups(data):
 	return data
 
 
+def parse_inkml(listfile_name, gt_location):
+	gt_dict = {}
+	with open(data_folder+listfile_name,'r') as trace_file_list:
+		data = csv.reader(trace_file_list,delimiter=',')
+		gt_dict = get_gt(gt_location)
+		data_obj_list = []
+		i = 0
+		data_len = len(gt_dict.keys())
+		for row in data:
+			file_name = row[0]
+			with open(file_name,'r') as inkml_file:
+				i+=1
+				print(i,' of ',data_len)
+				xml_data = bs4.BeautifulSoup(inkml_file, 'lxml')
+				ink = xml_data.ink
+				#Meta data for the inkml files
+				name = ink.find_all('annotation')[1].get_text()
+				ground_truth = gt_dict[name].strip()
+				trace = ink.trace
+				data_obj = Character_Data()
+				data_obj.filename = file_name
+				data_obj.id = name
+				data_obj.gt = gt_dict[name].strip()
+				temp_content = [[content.strip() for content in trace.contents] for trace in ink.find_all('trace')]
+				x = [[a.split(',') for a in trace][0] for trace in temp_content]
+				data_obj.trace = x
+				data_obj = remove_dups(data_obj)
+				data_obj_list.append(data_obj)
+	return data_obj_list
+
+
+
+def serializa_data_obj_list(serialized_filename, input_inkml_list_file, gt_file_location):
+	data_obj_list = []
+	if path.exists(data_folder+serialized_filename):
+		with open(data_folder+serialized_filename,'rb') as pickle_file:
+			data_obj_list = pickle.load(pickle_file)
+	else:
+		data_obj_list = parse_inkml(input_inkml_list_file,gt_file_location)
+		with open(data_folder+serialized_filename,'wb') as pickle_file:
+			pickle.dump(data_obj_list,pickle_file)	
+	return data_obj_list
+
+
 
 def parse_data():
-	gt_dict = {}
-	if sys.argv[1] != 3:
-		with open('.\\Data\\file_list_no_junk.csv','r') as trace_file_list:
-				data = csv.reader(trace_file_list,delimiter=',')
-				gt_no_junkdict = get_gt()
-				gt_dict.update(gt_no_junkdict)
-				data_obj_list = []
-				i = 0
-				data_len = len(gt_dict.keys())
-				for row in data:
-					file_name = row[0]
-					with open(file_name,'r') as inkml_file:
-						i+=1
-						print(i,' of ',data_len)
-						xml_data = bs4.BeautifulSoup(inkml_file, 'lxml')
-						ink = xml_data.ink
-						#Meta data for the inkml files
-						name = ink.find_all('annotation')[1].get_text()
-						ground_truth = gt_dict[name].strip()
-						trace = ink.trace
-						data_obj = Character_Data()
-						data_obj.filename = file_name
-						data_obj.id = name
-						data_obj.gt = gt_dict[name].strip()
-						temp_content = [[content.strip() for content in trace.contents] for trace in ink.find_all('trace')]
-						x = [[a.split(',') for a in trace][0] for trace in temp_content]
-						data_obj.trace = x
-						data_obj = remove_dups(data_obj)
-						data_obj_list.append(data_obj)
-		if sys.argv[1] != 0:
-			gt_junk_dict = get_junk_gt()
-			gt_dict.update(gt_junk_dict)
-			with open('.\\Data\\file_list_junk.csv', 'r') as trace_file_list:
-				data = csv.reader(trace_file_list, delimiter=',')
-				gt_dict = get_gt()
-				gt_junk_dict = get_junk_gt()
-				gt_dict.update(gt_junk_dict)
-				data_obj_list = []
-				i = 0
-				data_len = len(gt_dict.keys())
-				for row in data:
-					file_name = row[0]
-					with open(file_name, 'r') as inkml_file:
-						i += 1
-						print(i, ' of ', data_len)
-						xml_data = bs4.BeautifulSoup(inkml_file, 'lxml')
-						ink = xml_data.ink
-						# Meta data for the inkml files
-						name = ink.find_all('annotation')[1].get_text()
-						ground_truth = gt_dict[name].strip()
-						trace = ink.trace
-						data_obj = Character_Data()
-						data_obj.filename = file_name
-						data_obj.id = name
-						data_obj.gt = gt_dict[name].strip()
-						temp_content = [[content.strip() for content in trace.contents] for trace in
-										ink.find_all('trace')]
-						x = [[a.split(',') for a in trace][0] for trace in temp_content]
-						data_obj.trace = x
-						data_obj = remove_dups(data_obj)
-						data_obj_list.append(data_obj)
-	return data_obj_list
+	symbol_data_obj_list = []
+	junk_data_obj_list = []
+
+	symbol_data_obj_list = serializa_data_obj_list('symbols_objs.txt', 
+		write_csv.SYMBOL_INKML_LIST_FILE,'trainingSymbols\\iso_GT.txt')
+
+	junk_data_obj_list= serializa_data_obj_list('junk_objs.txt', 
+		write_csv.JUNK_INKML_LIST_FILE,'trainingJunk\\junk_GT_v3.txt')
+	return symbol_data_obj_list , junk_data_obj_list

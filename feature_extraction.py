@@ -1,10 +1,11 @@
 import numpy as np
 import scipy.spatial.distance as distance
-
+from os import path
+import write_csv
 
 BOUNDARY_DIM = (2.0/5.0)
 NUM_LINES = 9
-
+DATA_FOLDER = '.\\Data\\'
 #TODO: change get_line_length from average length per trace to average length across all traces
 #TODO: calculate sum and average of all angles in a new function
 #TODO: calculate the number of sharp points - maybe this can happen inside the function above . its in reference 22 of zannibis
@@ -327,3 +328,21 @@ def extract_all_features(data_obj):
     #     data_obj.features[inds[2]] = \
     #         f1, f2, f3
     #     iter += 1
+
+
+def get_features(data_object_list, feature_file_name):
+    #Normalize
+    if not path.exists(DATA_FOLDER+feature_file_name):
+        count = len(data_object_list)
+        i=0
+        for data_object in data_object_list:
+            i+=1
+            #Code for Feature Extraction here:
+            print(i,' of ',count,'.')
+            data_object.translate_scale()
+            extract_all_features(data_object)
+        write_csv.generate_features_table(data_object_list, feature_file_name)
+        print('data_normalized')
+    else:
+        print('Feature list already created.')
+    return data_object_list

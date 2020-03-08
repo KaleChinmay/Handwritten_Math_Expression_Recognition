@@ -101,4 +101,3 @@ class Character_Data:
 
         self.norm_traces = s_t_strokes
         #print(self.norm_traces)
-        #print(self.aspect_ratio)
