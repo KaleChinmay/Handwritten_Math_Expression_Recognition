@@ -7,11 +7,11 @@ from os import path
 import pickle
 
 
-data_folder = '.\\Data\\'
+data_folder = './Data/'
 
 
 def get_gt(gt_location):
-	#gt_location = 'trainingSymbols\\iso_GT.txt'
+	#gt_location = 'trainingSymbols/iso_GT.txt'
 	gt_dict = {}
 	with open(data_folder+gt_location,'r') as gt:
 		for line in gt:
@@ -37,7 +37,7 @@ def remove_dups(data):
 	return data
 
 
-def parse_inkml(listfile_name, gt_location):
+def parse_inkml(listfile_name, gt_location, junk_param):
 	gt_dict = {}
 	with open(data_folder+listfile_name,'r') as trace_file_list:
 		data = csv.reader(trace_file_list,delimiter=',')
@@ -54,12 +54,14 @@ def parse_inkml(listfile_name, gt_location):
 				ink = xml_data.ink
 				#Meta data for the inkml files
 				name = ink.find_all('annotation')[1].get_text()
-				ground_truth = gt_dict[name].strip()
 				trace = ink.trace
 				data_obj = Character_Data()
 				data_obj.filename = file_name
 				data_obj.id = name
-				data_obj.gt = gt_dict[name].strip()
+				if(junk_param!='2'):
+					data_obj.gt = gt_dict[name].strip()
+				else:
+					data_obj.gt = 'NA'
 				temp_content = [[content.strip() for content in trace.contents] for trace in ink.find_all('trace')]
 				x = [[a.split(',') for a in trace][0] for trace in temp_content]
 				data_obj.trace = x
@@ -69,26 +71,29 @@ def parse_inkml(listfile_name, gt_location):
 
 
 
-def serializa_data_obj_list(serialized_filename, input_inkml_list_file, gt_file_location):
+def serializa_data_obj_list(serialized_filename, input_inkml_list_file, gt_file_location, junk_param):
 	data_obj_list = []
 	if path.exists(data_folder+serialized_filename):
 		with open(data_folder+serialized_filename,'rb') as pickle_file:
 			data_obj_list = pickle.load(pickle_file)
 	else:
-		data_obj_list = parse_inkml(input_inkml_list_file,gt_file_location)
+		data_obj_list = parse_inkml(input_inkml_list_file,gt_file_location, junk_param)
 		with open(data_folder+serialized_filename,'wb') as pickle_file:
 			pickle.dump(data_obj_list,pickle_file)	
 	return data_obj_list
 
 
 
-def parse_data():
+def parse_data(junk_param):
 	symbol_data_obj_list = []
 	junk_data_obj_list = []
 
 	symbol_data_obj_list = serializa_data_obj_list('symbols_objs.txt', 
-		write_csv.SYMBOL_INKML_LIST_FILE,'trainingSymbols\\iso_GT.txt')
+		write_csv.SYMBOL_INKML_LIST_FILE,'trainingSymbols/iso_GT.txt', junk_param)
 
 	junk_data_obj_list= serializa_data_obj_list('junk_objs.txt', 
-		write_csv.JUNK_INKML_LIST_FILE,'trainingJunk\\junk_GT_v3.txt')
-	return symbol_data_obj_list , junk_data_obj_list
+		write_csv.JUNK_INKML_LIST_FILE,'trainingJunk/junk_GT_v3.txt', junk_param)
+
+	test_data_obj_list = serializa_data_obj_list('test_objs.txt',
+		write_csv.TEST_INKML_LIST_FILE,'testSymbols/symbols_with_junk_GT.txt' , 2)
+	return symbol_data_obj_list , junk_data_obj_list, test_data_obj_list

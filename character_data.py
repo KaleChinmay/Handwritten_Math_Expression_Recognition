@@ -7,7 +7,7 @@ class Character_Data:
         self.gt = ''
         self.id = 1
         self.trace = []
-        self.location = '.\\Data\\trainingSymbols\\'
+        self.location = './Data/trainingSymbols/'
         self.filename = ''
         self.name = ''
         self.max_x_point = None
@@ -73,7 +73,7 @@ class Character_Data:
                     t_strokes[i][j][0] = strokes[i][j][0]-min_x
                 else:
                     t_strokes[i][j][0] = strokes[i][j][0]+min_x
-                if(min_y >- 0):
+                if(min_y >= 0):
                     t_strokes[i][j][1] = strokes[i][j][1]-min_y
                 else:
                     t_strokes[i][j][1] = strokes[i][j][1]+min_y

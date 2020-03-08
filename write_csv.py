@@ -10,9 +10,10 @@ from classification_driver import data_type_map
 import sys
 
 
-data_folder = '.\\Data\\'
+data_folder = './Data/'
 SYMBOL_INKML_LIST_FILE = 'file_list_no_junk.csv'
 JUNK_INKML_LIST_FILE = 'file_list_junk.csv'
+TEST_INKML_LIST_FILE = 'test_file_list.csv'
 
 def generate_dummy_data():
     gt_file = open("trainingSymbols/iso_GT.txt")
@@ -29,8 +30,10 @@ def generate_dummy_data():
 def generate_inkml_file_list():
     symbol_files_count = 85801
     junk_files_count = 74283
+    test_files_count = 18434
     generate_file_list('trainingSymbols',SYMBOL_INKML_LIST_FILE, 'iso', symbol_files_count)
     generate_file_list('trainingJunk',JUNK_INKML_LIST_FILE, 'junk',junk_files_count)
+    generate_file_list('testSymbols',TEST_INKML_LIST_FILE,'iso',test_files_count)
 
 
 #Generate csv for given file list
@@ -55,19 +58,5 @@ def generate_features_table(data_object_list,feature_file_name):
             file_writer.writerow(row_list)
 
 
-
-def write_output_csv_files(data):
-
-    #temp_data = copy.deepcopy(data)
-    #with junk
-    train_data_junk, test_data_junk = train_test_split(data,
-        test_size = 0.3)
-    train_data_junk.to_csv(data_folder+'train_junk.csv', index=False)
-    test_data_junk.to_csv(data_folder+'test_junk.csv', index=False)
-
-    #without junk
-    data_without_junk = data[data['Class label']!='junk']
-    train_data_w_junk, test_data_w_junk = train_test_split(data_without_junk,
-        test_size = 0.3)
-    train_data_w_junk.to_csv(data_folder+'train_w_junk.csv', index=False)
-    test_data_w_junk.to_csv(data_folder+'test_w_junk.csv', index=False)
+def write_output_files(data, filename):
+    data.to_csv(data_folder+filename, index=True, header=None,quoting=csv.QUOTE_NONE)

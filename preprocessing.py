@@ -77,7 +77,7 @@ def interpolate_trace(old_trace):
 
 def get_gt():
     gt_dict = {}
-    with open('.\\Data\\trainingSymbols\\iso_GT.txt', 'r') as iso_gt:
+    with open('./Data/trainingSymbols/iso_GT.txt', 'r') as iso_gt:
         for line in iso_gt:
             temp_list = line.split(',')
             gt_dict[temp_list[0]] = temp_list[1]
@@ -85,12 +85,12 @@ def get_gt():
 
 
 # def readFile():
-#     location = '.\\Data\\trainingSymbols\\'
-#     with open('.\\Data\\meta_data.csv','w+') as meta_file:
+#     location = './Data/trainingSymbols/'
+#     with open('./Data/meta_data.csv','w+') as meta_file:
 #         file_writer = csv.writer(meta_file, delimiter=',')
 #         #file_writer.writerow()
 #         for i in range(171,85801):
-#             #with open('.\\Data\\meta_data.csv','w+'):
+#             #with open('./Data/meta_data.csv','w+'):
 #             file_name = location+'iso'+str(i)+'.inkml'
 #             with open(file_name) as file:
 #                 xml_data = bs4.BeautifulSoup(file,'lxml')
@@ -112,10 +112,10 @@ def create_objs(file, gt_dict):
     :return:
     """
     objects = {}
-    location = '.\\Data\\trainingSymbols\\'
-    with open('.\\Data\\meta_data.csv', 'w+') as meta_file:
+    location = './Data/trainingSymbols/'
+    with open('./Data/meta_data.csv', 'w+') as meta_file:
         for i in range(171, 85801):
-            # with open('.\\Data\\meta_data.csv','w+'):
+            # with open('./Data/meta_data.csv','w+'):
             file_name = location + 'iso' + str(i) + '.inkml'
             with open(file_name) as file:
                 xml_data = bs4.BeautifulSoup(file, 'lxml')
