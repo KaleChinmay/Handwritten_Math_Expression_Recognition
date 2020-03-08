@@ -73,7 +73,7 @@ class Character_Data:
                     t_strokes[i][j][0] = strokes[i][j][0]-min_x
                 else:
                     t_strokes[i][j][0] = strokes[i][j][0]+min_x
-                if(min_y >- 0):
+                if(min_y >= 0):
                     t_strokes[i][j][1] = strokes[i][j][1]-min_y
                 else:
                     t_strokes[i][j][1] = strokes[i][j][1]+min_y
@@ -98,6 +98,6 @@ class Character_Data:
             s_t_strokes[i] = np.array(s_t_strokes[i])
         #print(s_t_strokes[i] )
 
-        
+
         self.norm_traces = s_t_strokes
         #print(self.norm_traces)

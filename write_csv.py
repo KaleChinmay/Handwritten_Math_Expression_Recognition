@@ -13,6 +13,7 @@ import sys
 data_folder = '.\\Data\\'
 SYMBOL_INKML_LIST_FILE = 'file_list_no_junk.csv'
 JUNK_INKML_LIST_FILE = 'file_list_junk.csv'
+TEST_INKML_LIST_FILE = 'test_file_list.csv'
 
 def generate_dummy_data():
     gt_file = open("trainingSymbols/iso_GT.txt")
@@ -29,8 +30,10 @@ def generate_dummy_data():
 def generate_inkml_file_list():
     symbol_files_count = 85801
     junk_files_count = 74283
+    test_files_count = 18434
     generate_file_list('trainingSymbols',SYMBOL_INKML_LIST_FILE, 'iso', symbol_files_count)
     generate_file_list('trainingJunk',JUNK_INKML_LIST_FILE, 'junk',junk_files_count)
+    generate_file_list('testSymbols',TEST_INKML_LIST_FILE,'iso',test_files_count)
 
 
 #Generate csv for given file list

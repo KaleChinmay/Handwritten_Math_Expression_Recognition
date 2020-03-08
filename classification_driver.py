@@ -83,14 +83,124 @@ features_dict = {
 }
 
 
+def classify(data, classifier_param, junk_param, train_param, testing_data=None):
+	if(junk_param=='2'):
+		classifier_file = 'model_'+classifier_type_map[classifier_param]+'_final_prediction.txt'
+		model = None
+		le = None
 
+		testing_data = testing_data.fillna(0)
+		testing_data = testing_data.replace([np.inf, -np.inf], 0)
+		testing_data = testing_data.drop(columns=['Class label'], axis=1)
+		data = data.fillna(0)
+		data = data.replace([np.inf, -np.inf], 0)
+		features = data.drop(columns=['Class label'], axis=1)
+		if(train_param=='1'):
+			labels = np.array(data['Class label'])
+			le = pp.LabelEncoder()
+			train_labels = le.fit_transform(data['Class label'])
+			if classifier_param == '0':
+				print('Using KDTree')
+				classifier = KNeighborsClassifier(n_neighbors=1,algorithm='kd_tree')
+			elif(classifier_param == '1'):
+				print('Using RandomForest')
+				classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+			else:
+				print('Invalid input, returning')
+				return None, None
+			model = classifier.fit(features, train_labels)
+			model_info = [model,le]
+			with open(classifier_file,'wb') as f:
+				joblib.dump(model_info, f, compress=3)
+		elif(train_param=='0'):
+			if(path.exists(classifier_file)):
+				print('Found existing model :',classifier_file)
+				model_info = joblib.load(classifier_file)
+				model = model_info[0]
+				le = model_info[1]
+				print('Using model ',classifier_file)
+			else:
+				print('Model '+classifier_file+' not found. Returning')
+				return None, None
+		predictions = model.predict(testing_data)
+		predictions = le.inverse_transform(predictions)
+		testing_data['predictions'] = predictions
+		ouput_data = testing_data['predictions']
+		prediction_file = classifier_type_map[classifier_param]+'_final_prediction.csv'
+		write_csv.write_output_files(ouput_data, prediction_file)
+		print('Created file : '+prediction_file)
+		print('Generated Ground Truth and Output files')
+		return prediction_file, None
+	else:
+		classifier = None
+		classifier_file = 'model_'+classifier_type_map[classifier_param]+"_"+data_type_map[junk_param]+'.txt'
+		model = None
+		data = data.fillna(0)
+		data = data.replace([np.inf, -np.inf], 0)
+		features = data.drop(columns=['Class label'], axis=1)
+		labels = np.array(data['Class label'])
+		le = pp.LabelEncoder()
+		encoded_labels = le.fit_transform(data['Class label'])
+
+		train_features, test_features, train_labels, test_labels = train_test_split(features, encoded_labels,
+			test_size = 0.3, random_state = 42, stratify=encoded_labels)
+		print(train_param)
+		
+		if(train_param == '0'):
+			if(path.exists(classifier_file)):
+				print('Found existing model :',classifier_file)
+				model = joblib.load(classifier_file)
+				print('Using model ',classifier_file)
+			else:
+				print('Model '+classifier_file+' not found. Returning')
+				return None, None
+		else:
+			if classifier_param == '0':
+				print('Using KDTree')
+				classifier = KNeighborsClassifier(n_neighbors=1,algorithm='kd_tree')
+			elif(classifier_param == '1'):
+				print('Using RandomForest')
+				classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+			else:
+				print('Invalid input, returning')
+				return None, None
+			model = classifier.fit(train_features, train_labels)
+			classifier_file = 'model_'+classifier_type_map[classifier_param]+"_"+data_type_map[junk_param]+'.txt'
+			with open(classifier_file,'wb') as f:
+				joblib.dump(model, f, compress=3)
+			print('Using model ',classifier_file)
+
+		predictions = model.predict(test_features)
+		GT_file = None
+		accuracy = accuracy_score(predictions, test_labels)
+		test_labels = le.inverse_transform(test_labels)
+		print(accuracy)
+		#Write GT (input file)
+		test_features['Class label'] = test_labels
+		gt_data = test_features['Class label']
+		GT_file = classifier_type_map[classifier_param]+'_'+data_type_map[junk_param]+'_GT.csv'
+		write_csv.write_output_files(gt_data, GT_file)
+		print('Created file : '+GT_file)
+		predictions = le.inverse_transform(predictions)
+		test_features['predictions'] = predictions
+		ouput_data = test_features['predictions']
+		prediction_file = classifier_type_map[classifier_param]+'_'+data_type_map[junk_param]+'_prediction.csv'
+		write_csv.write_output_files(ouput_data, prediction_file)
+		print('Created file : '+prediction_file)
+		print('Generated Ground Truth and Output files')
+		return prediction_file, GT_file
+
+
+
+
+'''
 def classify(data, classifier_param, junk_param, train_param):
 	classifier = None
+	classifier_file = ''
 	classifier_file = 'model_'+classifier_type_map[classifier_param]+"_"+data_type_map[junk_param]+'.txt'
 	model = None
 	data = data.fillna(0)
 	data = data.replace([np.inf, -np.inf], 0)
-
 	features = data.drop(columns=['Class label'], axis=1)
 	labels = np.array(data['Class label'])
 	le = pp.LabelEncoder()
@@ -98,14 +208,17 @@ def classify(data, classifier_param, junk_param, train_param):
 
 	train_features, test_features, train_labels, test_labels = train_test_split(features, encoded_labels,
 		test_size = 0.3, random_state = 42, stratify=encoded_labels)
-	print(train_param		)
+	print(train_param)
+	
 	if(train_param == '0'):
 		if(path.exists(classifier_file)):
 			print('Found existing model :',classifier_file)
-			model = joblib.load(classifier_file)
+			model_info = joblib.load(classifier_file)
+			model = model_info['model']
+			le = model_info['char_encoder']
 			print('Using model ',classifier_file)
 		else:
-			print('Model not found. Returning')
+			print('Model '+classifier_file+' not found. Returning')
 			return None, None
 	else:
 		if classifier_param == '0':
@@ -116,35 +229,41 @@ def classify(data, classifier_param, junk_param, train_param):
 			classifier = RandomForestClassifier(n_estimators=100, random_state=42)
 		else:
 			print('Invalid input, returning')
-			return
+			return None, None
 		model = classifier.fit(train_features, train_labels)
 		classifier_file = 'model_'+classifier_type_map[classifier_param]+"_"+data_type_map[junk_param]+'.txt'
+		model_info = {'model':model, 'char_encoder':le}
 		with open(classifier_file,'wb') as f:
-			joblib.dump(model, f, compress=3)
+			joblib.dump(model_info, f, compress=3)
 		print('Using model ',classifier_file)
 
 
 	predictions = model.predict(test_features)
-	accuracy = accuracy_score(predictions, test_labels)
+	GT_file = None
+	if (junk_param !='2'):
+		accuracy = accuracy_score(predictions, test_labels)
+
+		
+		test_labels = le.inverse_transform(test_labels)
+		print(accuracy)
+		#Write GT (input file)
+		test_features['Class label'] = test_labels
+		gt_data = test_features['Class label']
+		GT_file = classifier_type_map[classifier_param]+'_'+data_type_map[junk_param]+'_GT.csv'
+		write_csv.write_output_files(gt_data, GT_file)
+		print('Created file : '+GT_file)
+	#Write Prediction (output file)
 
 	predictions = le.inverse_transform(predictions)
-	test_labels = le.inverse_transform(test_labels)
-	print(accuracy)
-
-	#Write GT (input file)
-	test_features['Class label'] = test_labels
-	gt_data = test_features['Class label']
-	GT_file = classifier_type_map[classifier_param]+'_'+data_type_map[junk_param]+'_GT.csv'
-	write_csv.write_output_files(gt_data, GT_file)
-
-	#Write Prediction (output file)
 	test_features['predictions'] = predictions
 	ouput_data = test_features['predictions']
 	prediction_file = classifier_type_map[classifier_param]+'_'+data_type_map[junk_param]+'_prediction.csv'
 	write_csv.write_output_files(ouput_data, prediction_file)
+	print('Created file : '+prediction_file)
 	print('Generated Ground Truth and Output files')
-	return prediction_file, GT_file
 
+	return prediction_file, GT_file
+'''
 
 
 def classification(junk_param, classifier_param, train_param):
@@ -166,8 +285,21 @@ def classification(junk_param, classifier_param, train_param):
 		frames = [valid_symbol_data, junk_symbol_data]
 		data = pd.concat(frames)
 		prediction_file, GT_file = classify(data, classifier_param, junk_param, train_param)
+	elif(junk_param=='2'):
+		test_symbol_data = pd.read_csv(data_folder+'test_feature_list.csv', header=None,  index_col='ID',
+			usecols=features_dict.keys() , names = [features_dict[key] for key in features_dict.keys()])
+		valid_symbol_data = pd.read_csv(data_folder+'symbol_feature_list.csv', header=None,  index_col='ID',
+			usecols=features_dict.keys() , names = [features_dict[key] for key in features_dict.keys()])
+		junk_symbol_data = pd.read_csv(data_folder+'junk_feature_list.csv', header=None,  index_col='ID',
+			usecols=features_dict.keys() , names = [features_dict[key] for key in features_dict.keys()])
+		#Merge 2 dataframes
+		frames = [valid_symbol_data, junk_symbol_data]
+		data = pd.concat(frames)
+		prediction_file, GT_file = classify(data, classifier_param, junk_param, train_param, test_symbol_data)
 	else:
 		print('Invalid input, returning')
 	return prediction_file, GT_file
 
-#def split_data(data, labels):
+
+
+
