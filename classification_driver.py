@@ -76,13 +76,15 @@ features_dict = {
 }
 
 
+
+
+
+
+
 def classify():
 	print(features_dict)
 	data = pd.read_csv('.\\Data\\feature_list_'+data_type_map[sys.argv[1]]+'.csv', header=None,  index_col='ID',
 		usecols=features_dict.keys() , names = [features_dict[key] for key in features_dict.keys()])
-
-
-
 
 	#rite_output_csv(data)
 	data = data.fillna(0)
