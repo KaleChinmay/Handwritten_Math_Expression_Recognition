@@ -98,6 +98,6 @@ class Character_Data:
             s_t_strokes[i] = np.array(s_t_strokes[i])
         #print(s_t_strokes[i] )
 
-
+        
         self.norm_traces = s_t_strokes
         #print(self.norm_traces)

@@ -6,18 +6,25 @@ import classification_driver
 import pickle
 from os import path
 import sys
-
+import os
 """
 COMMAND LINE ARGS GUIDE
-sys.argv[1] = junk, no junk or bonus. 0 = no junk, 1 = with junk, 2 = all for  bonus, 3 = junk only
+sys.argv[1] = junk, no junk or bonus. 0 = no junk, 1 = with junk
 sys.argv[2] = classifier type. 0 = kd tree, 1 = random forest
+sys.argv[3] = Train Flag 0 = Dont train just predict with existing modelkd tree, 1 = Train again
+
 """
+
+data_folder = '.\\Data\\'
 
 def main():
 
 
 	junk_param = sys.argv[1]
 	classifier_param = sys.argv[2]
+	train_param = sys.argv[3]
+
+
 	print('Main Program Begins : ')
 	write_csv.generate_inkml_file_list()
 	symbol_data_obj_list , junk_data_obj_list = parse_data.parse_data()
@@ -29,11 +36,13 @@ def main():
 	junk_data_obj_list = feature_extraction.get_features(junk_data_obj_list,'junk_feature_list.csv')
 	print('Features extracted')
 
-	classification_driver.classification(junk_param, classifier_param)
+	prediction_file, GT_file = classification_driver.classification(junk_param, classifier_param, train_param)
 	#Feature Extraction follows
-
-	#After this we can save all features in one csv as a table with final column as output(GT)
-	#This will also save time for parsing ISO files again and again.
+	if(prediction_file is not None and GT_file is not None):
+		command = 'python evalSymbIsole.py '+data_folder+GT_file+' '+data_folder+prediction_file+' HTML > output.html'
+		#After this we can save all features in one csv as a table with final column as output(GT)
+		#This will also save time for parsing ISO files again and again.
+		os.system(command)
 	print('Done!')
 
 

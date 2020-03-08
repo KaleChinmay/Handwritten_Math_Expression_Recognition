@@ -13,6 +13,7 @@ from sklearn.model_selection import train_test_split
 import preprocessing
 import pandas as pd
 import matplotlib.pyplot as plt
+from os import path
 import numpy as np
 from sklearn.metrics import accuracy_score
 import joblib
@@ -83,20 +84,10 @@ features_dict = {
 
 
 
-def classify(data, classifier_param, junk_param):
+def classify(data, classifier_param, junk_param, train_param):
 	classifier = None
-	classifier_file = ''
-
-	if classifier_param == '0':
-		print('Using KDTree')
-		classifier = KNeighborsClassifier(n_neighbors=1,algorithm='kd_tree')
-	elif(classifier_param == '1'):
-		print('Using RandomForest')
-		classifier = RandomForestClassifier(n_estimators=100, random_state=42)
-	else:
-		print('Invalid input, returning')
-		return
-
+	classifier_file = 'model_'+classifier_type_map[classifier_param]+"_"+data_type_map[junk_param]+'.txt'
+	model = None
 	data = data.fillna(0)
 	data = data.replace([np.inf, -np.inf], 0)
 
@@ -107,31 +98,63 @@ def classify(data, classifier_param, junk_param):
 
 	train_features, test_features, train_labels, test_labels = train_test_split(features, encoded_labels,
 		test_size = 0.3, random_state = 42, stratify=encoded_labels)
+	print(train_param		)
+	if(train_param == '0'):
+		if(path.exists(classifier_file)):
+			print('Found existing model :',classifier_file)
+			model = joblib.load(classifier_file)
+			print('Using model ',classifier_file)
+		else:
+			print('Model not found. Returning')
+			return None, None
+	else:
+		if classifier_param == '0':
+			print('Using KDTree')
+			classifier = KNeighborsClassifier(n_neighbors=1,algorithm='kd_tree')
+		elif(classifier_param == '1'):
+			print('Using RandomForest')
+			classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+		else:
+			print('Invalid input, returning')
+			return
+		model = classifier.fit(train_features, train_labels)
+		classifier_file = 'model_'+classifier_type_map[classifier_param]+"_"+data_type_map[junk_param]+'.txt'
+		with open(classifier_file,'wb') as f:
+			joblib.dump(model, f, compress=3)
+		print('Using model ',classifier_file)
 
 
-
-	model = classifier.fit(train_features, train_labels)
-
-	
-	classifier_file = 'model_'+classifier_type_map[classifier_param]+"_"+data_type_map[junk_param]+'.txt'
-	with open(classifier_file,'wb') as f:
-		joblib.dump(model, f, compress=3)
 	predictions = model.predict(test_features)
 	accuracy = accuracy_score(predictions, test_labels)
+
 	predictions = le.inverse_transform(predictions)
+	test_labels = le.inverse_transform(test_labels)
+	print(accuracy)
+
+	#Write GT (input file)
+	test_features['Class label'] = test_labels
+	gt_data = test_features['Class label']
+	GT_file = classifier_type_map[classifier_param]+'_'+data_type_map[junk_param]+'_GT.csv'
+	write_csv.write_output_files(gt_data, GT_file)
+
+	#Write Prediction (output file)
 	test_features['predictions'] = predictions
 	ouput_data = test_features['predictions']
-	ouput_data.to_csv(data_folder+'prediction_output.csv', index=True, header=None,quoting=csv.QUOTE_NONE)
+	prediction_file = classifier_type_map[classifier_param]+'_'+data_type_map[junk_param]+'_prediction.csv'
+	write_csv.write_output_files(ouput_data, prediction_file)
+	print('Generated Ground Truth and Output files')
+	return prediction_file, GT_file
 
 
-def classification(junk_param, classifier_param):
+
+def classification(junk_param, classifier_param, train_param):
 
 
 	if(junk_param=='0'):
 		print('Classifying Valid Symbols only')
 		data = pd.read_csv(data_folder+'symbol_feature_list.csv', header=None,  index_col='ID',
 			usecols=features_dict.keys() , names = [features_dict[key] for key in features_dict.keys()])
-		classify(data, classifier_param, junk_param)
+		prediction_file, GT_file = classify(data, classifier_param, junk_param, train_param)
 	elif(junk_param=='1'):
 		print('Classifying Valid+Junk Symbols.')
 		data = None
@@ -142,9 +165,9 @@ def classification(junk_param, classifier_param):
 		#Merge 2 dataframes
 		frames = [valid_symbol_data, junk_symbol_data]
 		data = pd.concat(frames)
-		classify(data, classifier_param, junk_param)
+		prediction_file, GT_file = classify(data, classifier_param, junk_param, train_param)
 	else:
 		print('Invalid input, returning')
-
+	return prediction_file, GT_file
 
 #def split_data(data, labels):
