@@ -12,7 +12,6 @@ COMMAND LINE ARGS GUIDE
 sys.argv[1] = junk, no junk or bonus. 0 = no junk, 1 = with junk,  2 = train all dataset, (Test on new dataset)
 sys.argv[2] = classifier type. 0 = kd tree, 1 = random forest
 sys.argv[3] = Train Flag,  0 = test with existing model, 1 = Train again
-sys.argv[4] = Split data  1 = Dont split, train on all data, 0 split and train
 
 """
 

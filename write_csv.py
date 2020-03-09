@@ -41,7 +41,7 @@ def generate_file_list(location, filename, ink_filename, file_count):
     with open(data_folder+filename,'w',newline='') as file_list:
         file_writer = csv.writer(file_list, delimiter=',')
         for i in range(file_count):
-            file_name = data_folder+location+'\\' + ink_filename + str(i) + '.inkml'
+            file_name = data_folder+location+'/' + ink_filename + str(i) + '.inkml'
             file_writer.writerow([file_name])
 
 
