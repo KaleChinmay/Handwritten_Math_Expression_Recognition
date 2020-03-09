@@ -16,6 +16,10 @@ JUNK_INKML_LIST_FILE = 'file_list_junk.csv'
 TEST_INKML_LIST_FILE = 'test_file_list.csv'
 
 def generate_dummy_data():
+    """
+    depracated. used to create fake data to test pipeline
+    :return:
+    """
     gt_file = open("trainingSymbols/iso_GT.txt")
     with open("dummy_data.csv", "w") as dummy:
         for line in gt_file:
@@ -28,6 +32,10 @@ def generate_dummy_data():
 
 #Generate csv containing inkml files list for both junk and valid symbols
 def generate_inkml_file_list():
+    """
+    genreates list of inkml files to be used in pipeline
+    :return:
+    """
     symbol_files_count = 85801
     junk_files_count = 74283
     test_files_count = 18434
@@ -38,15 +46,29 @@ def generate_inkml_file_list():
 
 #Generate csv for given file list
 def generate_file_list(location, filename, ink_filename, file_count):
+    """
+    generates list of files
+    :param location:
+    :param filename:
+    :param ink_filename:
+    :param file_count: 
+    :return:
+    """
     with open(data_folder+filename,'w',newline='') as file_list:
         file_writer = csv.writer(file_list, delimiter=',')
         for i in range(file_count):
-            file_name = data_folder+location+'\\' + ink_filename + str(i) + '.inkml'
+            file_name = data_folder+location+'/' + ink_filename + str(i) + '.inkml'
             file_writer.writerow([file_name])
 
 
 
 def generate_features_table(data_object_list,feature_file_name):
+    """
+    generates csv containing feature vectors
+    :param data_object_list:
+    :param feature_file_name:
+    :return:
+    """
     with open(data_folder+feature_file_name,'w',newline='') as feature_list:
         file_writer = csv.writer(feature_list, delimiter=',')
         for i in range(len(data_object_list)):

@@ -8,13 +8,6 @@ from character_data import Character_Data
 import write_csv
 
 
-def generate_inkml(data_obj):
-    """
-    generates an inkml file from a data object. used to help test preprocessing features
-    :param data_obj:
-    :return:
-    """
-
 
 def interpolate_trace(old_trace):
     """
@@ -84,25 +77,6 @@ def get_gt():
     return gt_dict
 
 
-# def readFile():
-#     location = './Data/trainingSymbols/'
-#     with open('./Data/meta_data.csv','w+') as meta_file:
-#         file_writer = csv.writer(meta_file, delimiter=',')
-#         #file_writer.writerow()
-#         for i in range(171,85801):
-#             #with open('./Data/meta_data.csv','w+'):
-#             file_name = location+'iso'+str(i)+'.inkml'
-#             with open(file_name) as file:
-#                 xml_data = bs4.BeautifulSoup(file,'lxml')
-#                 data_obj = Data()
-#                 ink = xml_data.ink
-#                 name = ink.find_all('annotation')[1].get_text()
-#                 data_obj.id = name
-#                 data_obj.gt = gt_dict[name].strip()
-#                 trace = ink.trace
-#                 temp_content = [[content.strip() for content in trace.contents] for trace in ink.find_all('trace')]
-#                 x = [[a.split(',') for a in trace][0] for trace in temp_content]
-#                 data_obj.trace = x
 
 def create_objs(file, gt_dict):
     """
@@ -146,5 +120,3 @@ def preprocess_data(csv_file):
     data = create_objs(filename, gt_dict)
     for key in data:
         preprocess_objects(data[key])
-
-
