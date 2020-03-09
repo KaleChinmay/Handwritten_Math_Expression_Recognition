@@ -6,11 +6,19 @@ import write_csv
 from os import path
 import pickle
 
-
+"""
+__author__ = Laurne Cole, Chinmay Kale
+functions for retrieving script from inkml files
+"""
 data_folder = './Data/'
 
 
 def get_gt(gt_location):
+	"""
+	parse a ground truth file into a dictionary mapping ground truths to ids
+	:param gt_location:
+	:return:
+	"""
 	#gt_location = 'trainingSymbols/iso_GT.txt'
 	gt_dict = {}
 	with open(data_folder+gt_location,'r') as gt:
@@ -21,6 +29,11 @@ def get_gt(gt_location):
 
 
 def remove_dups(data):
+	"""
+	remove duplicate points from traces and convert to float
+	:param data:
+	:return:
+	"""
 	data_trace_len = len(data.trace)
 	for i in range(data_trace_len):
 		data_trace_i_len = len(data.trace[i])
@@ -38,6 +51,13 @@ def remove_dups(data):
 
 
 def parse_inkml(listfile_name, gt_location, junk_param):
+	"""
+	read inkml file and create character data objects
+	:param listfile_name:
+	:param gt_location:
+	:param junk_param:
+	:return:
+	"""
 	gt_dict = {}
 	with open(data_folder+listfile_name,'r') as trace_file_list:
 		data = csv.reader(trace_file_list,delimiter=',')
@@ -72,6 +92,14 @@ def parse_inkml(listfile_name, gt_location, junk_param):
 
 
 def serializa_data_obj_list(serialized_filename, input_inkml_list_file, gt_file_location, junk_param):
+	"""
+	serialize a list of data objects to a binary pickle file
+	:param serialized_filename:
+	:param input_inkml_list_file:
+	:param gt_file_location:
+	:param junk_param:
+	:return:
+	"""
 	data_obj_list = []
 	if path.exists(data_folder+serialized_filename):
 		with open(data_folder+serialized_filename,'rb') as pickle_file:
@@ -79,19 +107,24 @@ def serializa_data_obj_list(serialized_filename, input_inkml_list_file, gt_file_
 	else:
 		data_obj_list = parse_inkml(input_inkml_list_file,gt_file_location, junk_param)
 		with open(data_folder+serialized_filename,'wb') as pickle_file:
-			pickle.dump(data_obj_list,pickle_file)	
+			pickle.dump(data_obj_list,pickle_file)
 	return data_obj_list
 
 
 
 def parse_data(junk_param):
+	"""
+	write data to files
+	:param junk_param:
+	:return:
+	"""
 	symbol_data_obj_list = []
 	junk_data_obj_list = []
 
-	symbol_data_obj_list = serializa_data_obj_list('symbols_objs.txt', 
+	symbol_data_obj_list = serializa_data_obj_list('symbols_objs.txt',
 		write_csv.SYMBOL_INKML_LIST_FILE,'trainingSymbols/iso_GT.txt', junk_param)
 
-	junk_data_obj_list= serializa_data_obj_list('junk_objs.txt', 
+	junk_data_obj_list= serializa_data_obj_list('junk_objs.txt',
 		write_csv.JUNK_INKML_LIST_FILE,'trainingJunk/junk_GT_v3.txt', junk_param)
 
 	test_data_obj_list = serializa_data_obj_list('test_objs.txt',

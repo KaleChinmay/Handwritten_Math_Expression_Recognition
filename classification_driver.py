@@ -89,7 +89,7 @@ features_dict = {
 }
 
 class_label_dict = {}
-THRESHOLD = 10
+THRESHOLD = 5
 
 
 
@@ -128,10 +128,10 @@ def classify(data, classifier_param, junk_param, train_param, testing_data=None)
 			#labels = np.array(data['Class label'])
 			if classifier_param == '0':
 				print('Using KDTree')
-				classifier = KNeighborsClassifier(n_neighbors=1,algorithm='kd_tree')
+				classifier = KNeighborsClassifier(n_neighbors=1,algorithm='kd_tree', p=1)
 			elif(classifier_param == '1'):
 				print('Using Ensemble')
-				classifier = RandomForestClassifier(n_estimators=150, random_state=42, max_depth=35)
+				classifier = RandomForestClassifier(n_estimators=150, random_state=42, max_depth=36)
 				#classifier = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(100, 5), random_state=42)
 				#model1 = LogisticRegression(random_state=1)
 				#model2 = tree.DecisionTreeClassifier(random_state=1)
@@ -230,8 +230,6 @@ def classify(data, classifier_param, junk_param, train_param, testing_data=None)
 
 
 def classification(junk_param, classifier_param, train_param):
-
-
 	if(junk_param=='0'):
 		print('Classifying Valid Symbols only')
 		data = pd.read_csv(data_folder+'symbol_feature_list.csv', header=None,  index_col='ID',
