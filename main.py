@@ -17,6 +17,7 @@ COMMAND LINE ARGS GUIDE
 sys.argv[1] = junk, no junk or bonus. 0 = no junk, 1 = with junk,  2 = train all dataset, (Test on new dataset)
 sys.argv[2] = classifier type. 0 = kd tree, 1 = random forest
 sys.argv[3] = Train Flag,  0 = test with existing model, 1 = Train again
+sys.argv[4] = Train Flag,  0 =  Skip feature extraction, 1 = Perform Feature extraction again
 """
 
 data_folder = './Data/'
@@ -34,9 +35,6 @@ def main():
 		print('Main Program Begins : ')
 		write_csv.generate_inkml_file_list()
 		symbol_data_obj_list , junk_data_obj_list, test_data_obj_list = parse_data.parse_data(junk_param)
-		print(len(symbol_data_obj_list))
-		print(len(junk_data_obj_list))
-		print(len(test_data_obj_list))
 		print('Data objects created')
 		symbol_data_obj_list = feature_extraction.get_features(symbol_data_obj_list,'symbol_feature_list.csv')
 		junk_data_obj_list = feature_extraction.get_features(junk_data_obj_list,'junk_feature_list.csv')

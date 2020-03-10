@@ -128,5 +128,5 @@ def parse_data(junk_param):
 		write_csv.JUNK_INKML_LIST_FILE,'trainingJunk/junk_GT_v3.txt', junk_param)
 
 	test_data_obj_list = serializa_data_obj_list('test_objs.txt',
-		write_csv.TEST_INKML_LIST_FILE,'testSymbols/symbols_with_junk_GT.txt' , 2)
+		write_csv.TEST_INKML_LIST_FILE,'testSymbols/symbols_with_junk_GT.txt' , '2')
 	return symbol_data_obj_list , junk_data_obj_list, test_data_obj_list
