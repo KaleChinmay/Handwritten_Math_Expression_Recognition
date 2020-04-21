@@ -1,6 +1,14 @@
 import copy
 import numpy as np
 
+def get_average_distance(stroke):
+	size = len(stroke)
+	avg_distance = 0
+	for i in range(1, size):
+		avg_distance += np.linalg.norm(np.array(stroke[i]) - np.array(stroke[i-1]))
+	avg_distance = avg_distance/size
+
+	return avg_distance
 
 class Character_Data:
     def __init__(self):
@@ -101,3 +109,37 @@ class Character_Data:
 
         self.norm_traces = s_t_strokes
         #print(self.norm_traces)
+
+        def interpolate_strokes(self):
+            for k in range(len(self.norm_traces)):
+                new_stroke = []
+                stroke = self.norm_traces[k]
+                distance = get_average_distance(stroke) / 2
+                size = len(stroke)
+                for i in range(1, size):
+                    if stroke[i][0] <= stroke[i - 1][0]:
+                        backwards = True
+                    else:
+                        backwards = False
+                    # determine how many points to add
+                    n = int(((np.linalg.norm(np.array(stroke[i]) - np.array(stroke[i - 1]))) // distance) - 1)
+                    # print(n)
+                    new_stroke.append(stroke[i - 1])
+
+                    if n > 0:
+                        x_change = (stroke[i][0] - stroke[i - 1][0]) / (n + 1)
+                        x = []
+                        for j in range(1, n + 1):
+                            x.append(stroke[i - 1][0] + j * x_change)
+                        if not backwards:
+                            y = np.interp(x, [stroke[i - 1][0], stroke[i][0]], [stroke[i - 1][1], stroke[i][1]])
+                        else:
+                            x.reverse()
+                            y = list(np.interp(x, [stroke[i][0], stroke[i - 1][0]], [stroke[i][1], stroke[i - 1][1]]))
+                            x.reverse()
+                            y.reverse()
+                        for j in range(n):
+                            new_stroke.append([x[j], y[j]])
+
+                new_stroke.append(stroke[size - 1])
+                self.norm_traces[k] = np.array(new_stroke)

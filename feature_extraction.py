@@ -340,6 +340,7 @@ def get_features(data_object_list, feature_file_name):
             #Code for Feature Extraction here:
             print(i,' of ',count,'.')
             data_object.translate_scale()
+            data_object.interpolate_strokes()
             extract_all_features(data_object)
         write_csv.generate_features_table(data_object_list, feature_file_name)
         print('data_normalized')
