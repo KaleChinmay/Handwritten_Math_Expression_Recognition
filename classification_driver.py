@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 from os import path
 import numpy as np
 from sklearn.metrics import accuracy_score
-import joblib
+import pickle
 import csv
 import sys
 from sklearn import svm
@@ -110,6 +110,7 @@ def preprocess(data, train_labels):
 
 
 def classify(data, classifier_param, junk_param, train_param, testing_data=None):
+	print('Shape : ',testing_data.shape)
 	if(junk_param=='2'):
 		classifier_file = 'model_'+classifier_type_map[classifier_param]+'_final_prediction.txt'
 		model = None
@@ -118,6 +119,7 @@ def classify(data, classifier_param, junk_param, train_param, testing_data=None)
 		testing_data = testing_data.fillna(0)
 		testing_data = testing_data.replace([np.inf, -np.inf], 0)
 		testing_data = testing_data.drop(columns=['Class label'], axis=1)
+		print('Shape : ',testing_data.shape)
 		data = data.fillna(0)
 		data = data.replace([np.inf, -np.inf], 0)
 		data = preprocess(data, data['Class label'])
@@ -148,11 +150,11 @@ def classify(data, classifier_param, junk_param, train_param, testing_data=None)
 			print('Model created')
 			model_info = [model,le]
 			with open(classifier_file,'wb') as f:
-				joblib.dump(model_info, f, compress=3)
+				pickle.dump(model_info, f)
 		elif(train_param=='0'):
 			if(path.exists(classifier_file)):
 				print('Found existing model :',classifier_file)
-				model_info = joblib.load(classifier_file)
+				model_info = pickle.load(classifier_file)
 				model = model_info[0]
 				le = model_info[1]
 				print('Using model ',classifier_file)
@@ -174,6 +176,9 @@ def classify(data, classifier_param, junk_param, train_param, testing_data=None)
 		model = None
 		data = data.fillna(0)
 		data = data.replace([np.inf, -np.inf], 0)
+		plot = data['Class label'].value_counts().plot(kind ='bar',figsize=(17,6))
+		figure = plot.get_figure()
+		figure.savefig('./data_image.png')	
 		features = data.drop(columns=['Class label'], axis=1)
 		labels = np.array(data['Class label'])
 		le = pp.LabelEncoder()
@@ -186,7 +191,7 @@ def classify(data, classifier_param, junk_param, train_param, testing_data=None)
 		if(train_param == '0'):
 			if(path.exists(classifier_file)):
 				print('Found existing model :',classifier_file)
-				model = joblib.load(classifier_file)
+				model = pickle.load(classifier_file)
 				print('Using model ',classifier_file)
 			else:
 				print('Model '+classifier_file+' not found. Returning')
@@ -194,7 +199,7 @@ def classify(data, classifier_param, junk_param, train_param, testing_data=None)
 		else:
 			if classifier_param == '0':
 				print('Using KDTree')
-				classifier = KNeighborsClassifier(n_neighbors=1,algorithm='kd_tree')
+				classifier = KNeighborsClassifier(n_neighbors=1,algorithm='kd_tree', p = 1)
 			elif(classifier_param == '1'):
 				print('Using RandomForest')
 				classifier = RandomForestClassifier(n_estimators=100, random_state=42)
@@ -204,7 +209,7 @@ def classify(data, classifier_param, junk_param, train_param, testing_data=None)
 			model = classifier.fit(train_features, train_labels)
 			classifier_file = 'model_'+classifier_type_map[classifier_param]+"_"+data_type_map[junk_param]+'.txt'
 			with open(classifier_file,'wb') as f:
-				joblib.dump(model, f, compress=3)
+				pickle.dump(model, f)
 			print('Using model ',classifier_file)
 
 		predictions = model.predict(test_features)
