@@ -1,0 +1,42 @@
+TODO:
+
+- data intake system
+
+- preprocessing - some stuff prior to segmentation
+
+-  create LOS graph structure:
+    -class to represent to the graph
+    -algo to check if strokes can see each other
+        -convex hull algorithm - probably can find a package for this
+        -classifier system + feature extraction for edges between nodes in our graph
+
+- post-segmentation preprocessing - mostly done from 1, but we should add some stuff. maybe add interpolation?
+
+- symbol classification
+
+- evaluation
+
+8835
+(8835, 255)
+[[2992.    0.]
+ [2994.    0.]
+ [2996.    0.]
+ ...
+ [8831.    0.]
+ [8832.    0.]
+ [8834.    0.]]
+[[2993.    0.]
+ [2995.    0.]
+ [2997.    0.]
+ ...
+ [8815.    0.]
+ [8828.    0.]
+ [8833.    0.]]
+2252925
+[[1. 1. 1. ... 0. 0. 0.]
+ [1. 1. 1. ... 0. 0. 0.]
+ [1. 1. 1. ... 0. 0. 0.]
+ ...
+ [0. 0. 1. ... 1. 0. 0.]
+ [0. 0. 1. ... 0. 0. 0.]
+ [0. 0. 0. ... 1. 0. 0.]]
