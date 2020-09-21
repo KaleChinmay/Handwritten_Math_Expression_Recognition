@@ -1,8 +1,8 @@
-# pattern_rec_project
+# Math Symbol Recognition
 Pattern Recognition project
 This is a code for pattern recognition for recognizing Math Expression and parsing them from scratch.
 
-Dataset used : CROHME dataset.
+Dataset used : # CROHME dataset.
 It has two types of data:
 a. Dataset with individial math symbols
 b. Dataset with mathematical expression.
