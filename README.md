@@ -1,4 +1,4 @@
-# Math Symbol Recognition
+# Handwritten Mathematical Expression Recognition
 Pattern Recognition project
 This is a code for pattern recognition for recognizing Math Expression and parsing them from scratch.
 
